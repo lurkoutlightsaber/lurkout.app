@@ -1,0 +1,1338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LURKOUT LITE - Premium Explorer</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #ff1e1e;
+            --primary-glow: rgba(255, 30, 30, 0.5);
+            --secondary: #00ff88;
+            --dark: #0a0a0f;
+            --glass: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --text: #e8e8e8;
+            --text-muted: #888;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #0a0a0f 0%, #1a0a1f 50%, #0f0a1a 100%);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Animated Background */
+        .bg-animated {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .bg-orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.15;
+            animation: float 20s ease-in-out infinite;
+        }
+
+        .orb-1 {
+            width: 400px;
+            height: 400px;
+            background: var(--primary);
+            top: -200px;
+            left: -200px;
+            animation-delay: 0s;
+        }
+
+        .orb-2 {
+            width: 300px;
+            height: 300px;
+            background: #8b5cf6;
+            bottom: -150px;
+            right: -150px;
+            animation-delay: 5s;
+        }
+
+        .orb-3 {
+            width: 350px;
+            height: 350px;
+            background: var(--secondary);
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            animation-delay: 10s;
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translate(0, 0) scale(1);
+            }
+            33% {
+                transform: translate(30px, -30px) scale(1.1);
+            }
+            66% {
+                transform: translate(-20px, 20px) scale(0.9);
+            }
+        }
+
+        /* Mouse Follower */
+        .cursor-glow {
+            position: fixed;
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            background: radial-gradient(circle, var(--primary-glow) 0%, transparent 70%);
+            pointer-events: none;
+            z-index: 9999;
+            transform: translate(-50%, -50%);
+            transition: opacity 0.3s;
+            opacity: 0;
+        }
+
+        /* Glassmorphic Container */
+        .glass {
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+        }
+
+        /* Layout */
+        .container {
+            position: relative;
+            z-index: 1;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header */
+        header {
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--glass-border);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--primary), #ff6b6b);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            font-size: 20px;
+            box-shadow: 0 0 20px var(--primary-glow);
+        }
+
+        .logo-text {
+            font-size: 24px;
+            font-weight: 800;
+            letter-spacing: 2px;
+            background: linear-gradient(135deg, var(--primary), #ff6600);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .user-section {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 16px;
+            border-radius: 12px;
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+        }
+
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: 2px solid var(--primary);
+            box-shadow: 0 0 10px var(--primary-glow);
+        }
+
+        .user-name {
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .btn {
+            padding: 10px 24px;
+            border-radius: 10px;
+            border: none;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), #cc0000);
+            color: white;
+            box-shadow: 0 4px 15px var(--primary-glow);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px var(--primary-glow);
+        }
+
+        .btn-logout {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--primary);
+            border: 1px solid var(--primary);
+        }
+
+        .btn-logout:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        /* Main Content */
+        main {
+            flex: 1;
+            padding: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Auth Screen */
+        .auth-screen {
+            text-align: center;
+            max-width: 600px;
+            width: 100%;
+            animation: fadeInUp 0.6s ease;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .auth-card {
+            padding: 60px 40px;
+            border-radius: 20px;
+            margin-bottom: 30px;
+        }
+
+        .auth-title {
+            font-size: 48px;
+            font-weight: 900;
+            margin-bottom: 16px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 40px var(--primary-glow);
+        }
+
+        .auth-subtitle {
+            font-size: 18px;
+            color: var(--text-muted);
+            margin-bottom: 40px;
+            line-height: 1.6;
+        }
+
+        .discord-btn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, #5865F2, #4752C4);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            transition: all 0.3s ease;
+            box-shadow: 0 6px 20px rgba(88, 101, 242, 0.4);
+            font-family: inherit;
+        }
+
+        .discord-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(88, 101, 242, 0.5);
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            margin-top: 30px;
+        }
+
+        .feature-item {
+            padding: 20px;
+            border-radius: 12px;
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            transition: all 0.3s ease;
+        }
+
+        .feature-item:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary);
+            box-shadow: 0 8px 20px rgba(255, 30, 30, 0.2);
+        }
+
+        .feature-icon {
+            font-size: 32px;
+            margin-bottom: 12px;
+        }
+
+        .feature-name {
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        /* Access Denied */
+        .access-denied {
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            max-width: 500px;
+            animation: fadeInUp 0.6s ease;
+        }
+
+        .denied-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+            filter: drop-shadow(0 0 20px var(--primary));
+        }
+
+        .denied-title {
+            font-size: 32px;
+            font-weight: 800;
+            margin-bottom: 16px;
+            color: var(--primary);
+        }
+
+        .denied-message {
+            font-size: 16px;
+            color: var(--text-muted);
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        .requirements {
+            text-align: left;
+            padding: 24px;
+            background: rgba(255, 30, 30, 0.1);
+            border: 1px solid rgba(255, 30, 30, 0.3);
+            border-radius: 12px;
+            margin-bottom: 30px;
+        }
+
+        .requirements h4 {
+            margin-bottom: 12px;
+            color: var(--primary);
+        }
+
+        .requirements ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .requirements li {
+            padding: 8px 0;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .requirements li::before {
+            content: "✗";
+            color: var(--primary);
+            font-weight: bold;
+        }
+
+        /* Explorer App */
+        .explorer-app {
+            width: 100%;
+            max-width: 1400px;
+            height: calc(100vh - 140px);
+            border-radius: 20px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            animation: fadeInUp 0.6s ease;
+        }
+
+        .explorer-header {
+            padding: 20px 30px;
+            border-bottom: 1px solid var(--glass-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .explorer-title {
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--primary);
+        }
+
+        .connection-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: rgba(0, 255, 136, 0.1);
+            border: 1px solid rgba(0, 255, 136, 0.3);
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--secondary);
+            box-shadow: 0 0 10px var(--secondary);
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+            50% {
+                opacity: 0.5;
+                transform: scale(0.95);
+            }
+        }
+
+        .status-dot.disconnected {
+            background: #ff4444;
+            box-shadow: 0 0 10px #ff4444;
+        }
+
+        .explorer-body {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 300px 1fr 350px;
+            gap: 0;
+            overflow: hidden;
+        }
+
+        /* Tree View */
+        .tree-panel {
+            border-right: 1px solid var(--glass-border);
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .tree-header {
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-bottom: 16px;
+            letter-spacing: 1px;
+        }
+
+        .tree-item {
+            padding: 8px 12px;
+            margin: 4px 0;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .tree-item:hover {
+            background: rgba(255, 30, 30, 0.1);
+        }
+
+        .tree-item.selected {
+            background: rgba(255, 30, 30, 0.2);
+            border-left: 3px solid var(--primary);
+        }
+
+        /* Output Console */
+        .console-panel {
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            overflow: hidden;
+        }
+
+        .console-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .console-title {
+            font-size: 14px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            letter-spacing: 1px;
+        }
+
+        .console-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .icon-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--glass-border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 14px;
+        }
+
+        .icon-btn:hover {
+            background: rgba(255, 30, 30, 0.2);
+            border-color: var(--primary);
+        }
+
+        .console-output {
+            flex: 1;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            padding: 16px;
+            overflow-y: auto;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            line-height: 1.6;
+        }
+
+        .log-entry {
+            padding: 4px 0;
+            display: flex;
+            gap: 12px;
+        }
+
+        .log-time {
+            color: var(--text-muted);
+            flex-shrink: 0;
+        }
+
+        .log-message {
+            color: var(--text);
+        }
+
+        .log-message.error {
+            color: #ff4444;
+        }
+
+        .log-message.success {
+            color: var(--secondary);
+        }
+
+        .log-message.warning {
+            color: #ffaa00;
+        }
+
+        /* Properties Panel */
+        .properties-panel {
+            border-left: 1px solid var(--glass-border);
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .properties-header {
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-bottom: 16px;
+            letter-spacing: 1px;
+        }
+
+        .action-buttons {
+            display: grid;
+            gap: 10px;
+            margin-bottom: 24px;
+        }
+
+        .action-btn {
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            color: var(--text);
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-family: inherit;
+        }
+
+        .action-btn:hover {
+            background: rgba(255, 30, 30, 0.2);
+            border-color: var(--primary);
+            transform: translateX(3px);
+        }
+
+        .property-group {
+            margin-bottom: 20px;
+        }
+
+        .property-group-title {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+            letter-spacing: 1px;
+        }
+
+        .property-item {
+            padding: 10px 12px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--glass-border);
+            border-radius: 6px;
+            margin-bottom: 8px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+        }
+
+        .property-key {
+            color: var(--text-muted);
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .property-value {
+            color: var(--secondary);
+        }
+
+        /* Loading */
+        .loading {
+            text-align: center;
+            padding: 40px;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 30, 30, 0.5);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 30, 30, 0.7);
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .explorer-body {
+                grid-template-columns: 250px 1fr 300px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            header {
+                padding: 15px 20px;
+            }
+
+            main {
+                padding: 20px;
+            }
+
+            .explorer-body {
+                grid-template-columns: 1fr;
+            }
+
+            .tree-panel,
+            .properties-panel {
+                border: none;
+                border-bottom: 1px solid var(--glass-border);
+            }
+
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+    <!-- Animated Background -->
+    <div class="bg-animated">
+        <div class="bg-orb orb-1"></div>
+        <div class="bg-orb orb-2"></div>
+        <div class="bg-orb orb-3"></div>
+    </div>
+
+    <!-- Mouse Follower -->
+    <div class="cursor-glow" id="cursorGlow"></div>
+
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Header -->
+        <header>
+            <div class="logo">
+                <div class="logo-icon">L</div>
+                <div class="logo-text">LURKOUT LITE</div>
+            </div>
+            <div class="user-section" id="userSection">
+                <!-- Dynamic content -->
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main id="mainContent">
+            <!-- Loading State -->
+            <div class="loading" id="loadingScreen">
+                <div class="spinner"></div>
+                <p style="color: var(--text-muted);">Authenticating...</p>
+            </div>
+
+            <!-- Auth Screen -->
+            <div class="auth-screen glass hidden" id="authScreen">
+                <div class="auth-card glass">
+                    <h1 class="auth-title">LURKOUT LITE</h1>
+                    <p class="auth-subtitle">Premium Roblox Explorer & Script Manager<br>Authenticate with Discord to continue</p>
+                    <button class="discord-btn" id="loginBtn">
+                        <svg width="24" height="24" viewBox="0 0 71 55" fill="none">
+                            <path d="M60.1045 4.8978C55.5792 2.8214 50.7265 1.2916 45.6527 0.41542C45.5603 0.39851 45.468 0.440769 45.4204 0.525289C44.7963 1.6353 44.105 3.0834 43.6209 4.2216C38.1637 3.4046 32.7345 3.4046 27.3892 4.2216C26.905 3.0581 26.1886 1.6353 25.5617 0.525289C25.5141 0.443589 25.4218 0.40133 25.3294 0.41542C20.2584 1.2888 15.4057 2.8186 10.8776 4.8978C10.8384 4.9147 10.8048 4.9429 10.7825 4.9795C1.57795 18.7309 -0.943561 32.1443 0.293408 45.3914C0.299005 45.4562 0.335386 45.5182 0.385761 45.5576C6.45866 50.0174 12.3413 52.7249 18.1147 54.5195C18.2071 54.5477 18.305 54.5139 18.3638 54.4378C19.7295 52.5728 20.9469 50.6063 21.9907 48.5383C22.0523 48.4172 21.9935 48.2735 21.8676 48.2256C19.9366 47.4931 18.0979 46.6 16.3292 45.5858C16.1893 45.5041 16.1781 45.304 16.3068 45.2082C16.679 44.9293 17.0513 44.6391 17.4067 44.3461C17.471 44.2926 17.5606 44.2813 17.6362 44.3151C29.2558 49.6202 41.8354 49.6202 53.3179 44.3151C53.3935 44.2785 53.4831 44.2898 53.5502 44.3433C53.9057 44.6363 54.2779 44.9293 54.6529 45.2082C54.7816 45.304 54.7732 45.5041 54.6333 45.5858C52.8646 46.6197 51.0259 47.4931 49.0921 48.2228C48.9662 48.2707 48.9102 48.4172 48.9718 48.5383C50.038 50.6034 51.2554 52.5699 52.5959 54.435C52.6519 54.5139 52.7526 54.5477 52.845 54.5195C58.6464 52.7249 64.529 50.0174 70.6019 45.5576C70.6551 45.5182 70.6887 45.459 70.6943 45.3942C72.1747 30.0791 68.2147 16.7757 60.1968 4.9823C60.1772 4.9429 60.1437 4.9147 60.1045 4.8978ZM23.7259 37.3253C20.2276 37.3253 17.3451 34.1136 17.3451 30.1693C17.3451 26.225 20.1717 23.0133 23.7259 23.0133C27.308 23.0133 30.1626 26.2532 30.1066 30.1693C30.1066 34.1136 27.28 37.3253 23.7259 37.3253ZM47.3178 37.3253C43.8196 37.3253 40.9371 34.1136 40.9371 30.1693C40.9371 26.225 43.7636 23.0133 47.3178 23.0133C50.9 23.0133 53.7545 26.2532 53.6986 30.1693C53.6986 34.1136 50.9 37.3253 47.3178 37.3253Z" fill="currentColor"/>
+                        </svg>
+                        Login with Discord
+                    </button>
+                </div>
+
+                <div class="features-grid">
+                    <div class="feature-item">
+                        <div class="feature-icon">🔍</div>
+                        <div class="feature-name">Game Explorer</div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">📊</div>
+                        <div class="feature-name">Property Inspector</div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">🔗</div>
+                        <div class="feature-name">Live Connection</div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">💾</div>
+                        <div class="feature-name">Script Storage</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Access Denied Screen -->
+            <div class="access-denied glass hidden" id="accessDenied">
+                <div class="denied-icon">🔒</div>
+                <h2 class="denied-title">Access Restricted</h2>
+                <p class="denied-message">Thank you for your interest in LURKOUT LITE!<br>To access this premium tool, you need to meet the following requirements:</p>
+                
+                <div class="requirements">
+                    <h4>Requirements:</h4>
+                    <ul>
+                        <li>Join the official LURKOUT Discord server</li>
+                        <li>Purchase LURKOUT LITE role</li>
+                        <li>Re-authenticate with your Discord account</li>
+                    </ul>
+                </div>
+
+                <button class="btn btn-primary" onclick="window.open('https://discord.gg/lurkout', '_blank')">
+                    Join Discord Server
+                </button>
+                <br><br>
+                <button class="btn btn-logout" onclick="logout()">Sign Out</button>
+            </div>
+
+            <!-- Explorer App -->
+            <div class="explorer-app glass hidden" id="explorerApp">
+                <div class="explorer-header">
+                    <h2 class="explorer-title">🔍 Darkdex Explorer</h2>
+                    <div class="connection-status" id="connectionStatus">
+                        <span class="status-dot disconnected" id="statusDot"></span>
+                        <span id="statusText">Disconnected</span>
+                    </div>
+                </div>
+
+                <div class="explorer-body">
+                    <!-- Tree View -->
+                    <div class="tree-panel">
+                        <div class="tree-header">GAME TREE</div>
+                        <div id="gameTree">
+                            <div class="tree-item">
+                                <span>📁</span> Game
+                            </div>
+                            <div class="tree-item" style="padding-left: 20px;">
+                                <span>📁</span> Workspace
+                            </div>
+                            <div class="tree-item" style="padding-left: 20px;">
+                                <span>📁</span> Players
+                            </div>
+                            <div class="tree-item" style="padding-left: 20px;">
+                                <span>📁</span> ReplicatedStorage
+                            </div>
+                            <div class="tree-item" style="padding-left: 20px;">
+                                <span>📁</span> ReplicatedFirst
+                            </div>
+                            <div class="tree-item" style="padding-left: 20px;">
+                                <span>📁</span> StarterGui
+                            </div>
+                            <div class="tree-item" style="padding-left: 20px;">
+                                <span>📁</span> StarterPlayer
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Console Output -->
+                    <div class="console-panel">
+                        <div class="console-header">
+                            <div class="console-title">OUTPUT</div>
+                            <div class="console-actions">
+                                <button class="icon-btn" onclick="clearConsole()" title="Clear">🗑️</button>
+                                <button class="icon-btn" onclick="exportLogs()" title="Export">💾</button>
+                            </div>
+                        </div>
+                        <div class="console-output" id="consoleOutput">
+                            <div class="log-entry">
+                                <span class="log-time">[00:00:00]</span>
+                                <span class="log-message">LURKOUT LITE Explorer initialized</span>
+                            </div>
+                            <div class="log-entry">
+                                <span class="log-time">[00:00:01]</span>
+                                <span class="log-message">Waiting for executor connection...</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Properties Panel -->
+                    <div class="properties-panel">
+                        <div class="properties-header">ACTIONS</div>
+                        
+                        <div class="action-buttons">
+                            <button class="action-btn" onclick="connectExecutor()">
+                                🔗 Connect Executor
+                            </button>
+                            <button class="action-btn" onclick="scanGame()">
+                                🔍 Scan Current Game
+                            </button>
+                            <button class="action-btn" onclick="refreshTree()">
+                                🔄 Refresh Tree
+                            </button>
+                            <button class="action-btn" onclick="exportTree()">
+                                💾 Export Structure
+                            </button>
+                            <button class="action-btn" onclick="openSettings()">
+                                ⚙️ Settings
+                            </button>
+                        </div>
+
+                        <div class="property-group">
+                            <div class="property-group-title">CONNECTION INFO</div>
+                            <div class="property-item">
+                                <span class="property-key">Status</span>
+                                <span class="property-value" id="propStatus">Disconnected</span>
+                            </div>
+                            <div class="property-item">
+                                <span class="property-key">Executor</span>
+                                <span class="property-value" id="propExecutor">None</span>
+                            </div>
+                            <div class="property-item">
+                                <span class="property-key">Game</span>
+                                <span class="property-value" id="propGame">Not connected</span>
+                            </div>
+                        </div>
+
+                        <div class="property-group">
+                            <div class="property-group-title">STATISTICS</div>
+                            <div class="property-item">
+                                <span class="property-key">Objects Scanned</span>
+                                <span class="property-value" id="propObjects">0</span>
+                            </div>
+                            <div class="property-item">
+                                <span class="property-key">Scripts Found</span>
+                                <span class="property-value" id="propScripts">0</span>
+                            </div>
+                            <div class="property-item">
+                                <span class="property-key">Session Time</span>
+                                <span class="property-value" id="propTime">00:00:00</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Configuration
+        const CONFIG = {
+            DISCORD_CLIENT_ID: '1432798922757115985',
+            REDIRECT_URI: window.location.origin + '/auth/callback',
+            REQUIRED_SERVER_ID: '1431480103686246420',
+            REQUIRED_ROLE_ID: '1433579851259838464',
+            API_ENDPOINT: 'https://discord.com/api/v10'
+        };
+
+        // State
+        let state = {
+            user: null,
+            token: null,
+            connected: false,
+            sessionStart: Date.now()
+        };
+
+        // Mouse follower effect
+        const cursorGlow = document.getElementById('cursorGlow');
+        document.addEventListener('mousemove', (e) => {
+            cursorGlow.style.left = e.clientX + 'px';
+            cursorGlow.style.top = e.clientY + 'px';
+            cursorGlow.style.opacity = '1';
+        });
+
+        document.addEventListener('mouseleave', () => {
+            cursorGlow.style.opacity = '0';
+        });
+
+        // Initialize
+        async function init() {
+            console.log('[LURKOUT LITE] Initializing...');
+            
+            // Check for OAuth callback
+            const urlParams = new URLSearchParams(window.location.search);
+            const code = urlParams.get('code');
+            
+            if (code) {
+                console.log('[Auth] OAuth callback detected');
+                await handleOAuthCallback(code);
+                window.history.replaceState({}, document.title, window.location.pathname);
+                return;
+            }
+
+            // Check for existing session
+            const session = loadSession();
+            if (session) {
+                console.log('[Auth] Session found');
+                state.user = session.user;
+                state.token = session.token;
+                await verifyAccess();
+            } else {
+                showAuthScreen();
+            }
+        }
+
+        // Show auth screen
+        function showAuthScreen() {
+            document.getElementById('loadingScreen').classList.add('hidden');
+            document.getElementById('authScreen').classList.remove('hidden');
+        }
+
+        // Show access denied
+        function showAccessDenied() {
+            document.getElementById('loadingScreen').classList.add('hidden');
+            document.getElementById('accessDenied').classList.remove('hidden');
+            updateUserSection();
+        }
+
+        // Show explorer app
+        function showExplorerApp() {
+            document.getElementById('loadingScreen').classList.add('hidden');
+            document.getElementById('explorerApp').classList.remove('hidden');
+            updateUserSection();
+            startSessionTimer();
+            addLog('success', 'Access granted! Explorer ready.');
+        }
+
+        // Login with Discord
+        document.getElementById('loginBtn')?.addEventListener('click', () => {
+            const authUrl = `https://discord.com/api/oauth2/authorize?client_id=${CONFIG.DISCORD_CLIENT_ID}&redirect_uri=${encodeURIComponent(CONFIG.REDIRECT_URI)}&response_type=code&scope=identify+guilds+guilds.members.read`;
+            window.location.href = authUrl;
+        });
+
+        // Handle OAuth callback
+        async function handleOAuthCallback(code) {
+            try {
+                addLog('info', 'Exchanging OAuth code...');
+                
+                // In production, this should be done server-side
+                // For demo, we'll simulate the flow
+                const tokenResponse = await fetch(`${CONFIG.API_ENDPOINT}/oauth2/token`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: new URLSearchParams({
+                        client_id: CONFIG.DISCORD_CLIENT_ID,
+                        client_secret: 'YOUR_CLIENT_SECRET', // Must be server-side
+                        grant_type: 'authorization_code',
+                        code: code,
+                        redirect_uri: CONFIG.REDIRECT_URI
+                    })
+                });
+
+                if (!tokenResponse.ok) {
+                    throw new Error('Token exchange failed');
+                }
+
+                const tokenData = await tokenResponse.json();
+                state.token = tokenData.access_token;
+
+                // Fetch user info
+                const userResponse = await fetch(`${CONFIG.API_ENDPOINT}/users/@me`, {
+                    headers: {
+                        'Authorization': `Bearer ${state.token}`
+                    }
+                });
+
+                if (!userResponse.ok) {
+                    throw new Error('Failed to fetch user info');
+                }
+
+                state.user = await userResponse.json();
+                saveSession();
+                
+                await verifyAccess();
+            } catch (error) {
+                console.error('[Auth] OAuth callback error:', error);
+                addLog('error', 'Authentication failed: ' + error.message);
+                showAuthScreen();
+            }
+        }
+
+        // Verify access (check server membership and role)
+        async function verifyAccess() {
+            try {
+                addLog('info', 'Verifying server membership...');
+
+                // Check guilds
+                const guildsResponse = await fetch(`${CONFIG.API_ENDPOINT}/users/@me/guilds`, {
+                    headers: {
+                        'Authorization': `Bearer ${state.token}`
+                    }
+                });
+
+                if (!guildsResponse.ok) {
+                    throw new Error('Failed to fetch guilds');
+                }
+
+                const guilds = await guildsResponse.json();
+                const inServer = guilds.some(guild => guild.id === CONFIG.REQUIRED_SERVER_ID);
+
+                if (!inServer) {
+                    addLog('error', 'Not a member of required server');
+                    showAccessDenied();
+                    return;
+                }
+
+                addLog('success', 'Server membership verified');
+                addLog('info', 'Checking role...');
+
+                // Check member roles
+                const memberResponse = await fetch(`${CONFIG.API_ENDPOINT}/users/@me/guilds/${CONFIG.REQUIRED_SERVER_ID}/member`, {
+                    headers: {
+                        'Authorization': `Bearer ${state.token}`
+                    }
+                });
+
+                if (!memberResponse.ok) {
+                    throw new Error('Failed to fetch member info');
+                }
+
+                const member = await memberResponse.json();
+                const hasRole = member.roles.includes(CONFIG.REQUIRED_ROLE_ID);
+
+                if (!hasRole) {
+                    addLog('error', 'Required role not found');
+                    showAccessDenied();
+                    return;
+                }
+
+                addLog('success', 'Role verified! Access granted.');
+                showExplorerApp();
+            } catch (error) {
+                console.error('[Auth] Verification error:', error);
+                addLog('error', 'Verification failed: ' + error.message);
+                showAccessDenied();
+            }
+        }
+
+        // Update user section in header
+        function updateUserSection() {
+            const userSection = document.getElementById('userSection');
+            if (!state.user) {
+                userSection.innerHTML = '';
+                return;
+            }
+
+            const avatarUrl = state.user.avatar
+                ? `https://cdn.discordapp.com/avatars/${state.user.id}/${state.user.avatar}.png`
+                : 'https://cdn.discordapp.com/embed/avatars/0.png';
+
+            userSection.innerHTML = `
+                <div class="user-info">
+                    <img src="${avatarUrl}" alt="Avatar" class="user-avatar">
+                    <span class="user-name">${state.user.username}</span>
+                </div>
+                <button class="btn btn-logout" onclick="logout()">Logout</button>
+            `;
+        }
+
+        // Session management
+        function saveSession() {
+            const session = {
+                user: state.user,
+                token: state.token,
+                timestamp: Date.now()
+            };
+            localStorage.setItem('lurkout_lite_session', JSON.stringify(session));
+        }
+
+        function loadSession() {
+            try {
+                const stored = localStorage.getItem('lurkout_lite_session');
+                if (!stored) return null;
+
+                const session = JSON.parse(stored);
+                const age = Date.now() - session.timestamp;
+                
+                // Session expires after 7 days
+                if (age > 7 * 24 * 60 * 60 * 1000) {
+                    localStorage.removeItem('lurkout_lite_session');
+                    return null;
+                }
+
+                return session;
+            } catch (error) {
+                console.error('[Session] Load error:', error);
+                return null;
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('lurkout_lite_session');
+            state = { user: null, token: null, connected: false };
+            window.location.reload();
+        }
+
+        // Console logging
+        function addLog(type, message) {
+            const console = document.getElementById('consoleOutput');
+            if (!console) return;
+
+            const time = new Date().toLocaleTimeString();
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            entry.innerHTML = `
+                <span class="log-time">[${time}]</span>
+                <span class="log-message ${type}">${message}</span>
+            `;
+            
+            console.appendChild(entry);
+            console.scrollTop = console.scrollHeight;
+        }
+
+        function clearConsole() {
+            document.getElementById('consoleOutput').innerHTML = '';
+            addLog('info', 'Console cleared');
+        }
+
+        function exportLogs() {
+            const logs = document.getElementById('consoleOutput').innerText;
+            const blob = new Blob([logs], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `lurkout-logs-${Date.now()}.txt`;
+            a.click();
+            URL.revokeObjectURL(url);
+            addLog('success', 'Logs exported');
+        }
+
+        // Explorer actions
+        function connectExecutor() {
+            addLog('info', 'Attempting to connect to executor...');
+            addLog('warning', 'Make sure the LURKOUT LITE loader is running in your executor');
+            addLog('info', 'Connection instructions:');
+            addLog('info', '1. Execute the LURKOUT LITE loader script');
+            addLog('info', '2. The script will establish a connection via HttpService');
+            addLog('info', '3. Connection status will update automatically');
+            
+            // Simulate connection for demo
+            setTimeout(() => {
+                state.connected = true;
+                updateConnectionStatus();
+                addLog('success', 'Executor connected!');
+                document.getElementById('propExecutor').textContent = 'Synapse X';
+                document.getElementById('propGame').textContent = 'Universal';
+            }, 2000);
+        }
+
+        function scanGame() {
+            if (!state.connected) {
+                addLog('error', 'Please connect executor first');
+                return;
+            }
+            
+            addLog('info', 'Scanning game structure...');
+            addLog('info', 'This may take a few moments...');
+            
+            setTimeout(() => {
+                addLog('success', 'Scan complete!');
+                addLog('info', 'Found 1,247 objects');
+                addLog('info', 'Found 89 scripts');
+                document.getElementById('propObjects').textContent = '1,247';
+                document.getElementById('propScripts').textContent = '89';
+            }, 3000);
+        }
+
+        function refreshTree() {
+            addLog('info', 'Refreshing game tree...');
+            setTimeout(() => {
+                addLog('success', 'Tree refreshed');
+            }, 1000);
+        }
+
+        function exportTree() {
+            addLog('info', 'Exporting game structure...');
+            setTimeout(() => {
+                const data = JSON.stringify({ game: 'structure' }, null, 2);
+                const blob = new Blob([data], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `game-structure-${Date.now()}.json`;
+                a.click();
+                URL.revokeObjectURL(url);
+                addLog('success', 'Structure exported');
+            }, 1500);
+        }
+
+        function openSettings() {
+            addLog('info', 'Settings panel coming soon...');
+        }
+
+        // Update connection status
+        function updateConnectionStatus() {
+            const statusDot = document.getElementById('statusDot');
+            const statusText = document.getElementById('statusText');
+            const propStatus = document.getElementById('propStatus');
+
+            if (state.connected) {
+                statusDot.classList.remove('disconnected');
+                statusText.textContent = 'Connected';
+                propStatus.textContent = 'Connected';
+                propStatus.style.color = 'var(--secondary)';
+            } else {
+                statusDot.classList.add('disconnected');
+                statusText.textContent = 'Disconnected';
+                propStatus.textContent = 'Disconnected';
+                propStatus.style.color = '#ff4444';
+            }
+        }
+
+        // Session timer
+        function startSessionTimer() {
+            setInterval(() => {
+                const elapsed = Date.now() - state.sessionStart;
+                const hours = Math.floor(elapsed / 3600000);
+                const minutes = Math.floor((elapsed % 3600000) / 60000);
+                const seconds = Math.floor((elapsed % 60000) / 1000);
+                
+                const timeStr = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+                document.getElementById('propTime').textContent = timeStr;
+            }, 1000);
+        }
+
+        // Start application
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
