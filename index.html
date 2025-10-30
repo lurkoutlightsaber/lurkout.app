@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LURKOUT LITE </title>
+    <title>LURKOUT LITE</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
@@ -129,7 +129,7 @@
 
         /* Glassmorphic Container */
         .glass {
-            background: var(--glass);
+            background: var(--glass-bg);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
             border: 1px solid var(--glass-border);
@@ -199,7 +199,7 @@
             gap: 12px;
             padding: 8px 16px;
             border-radius: 12px;
-            background: var(--glass);
+            background: var(--glass-bg);
             border: 1px solid var(--glass-border);
         }
 
@@ -334,7 +334,7 @@
         .feature-item {
             padding: 20px;
             border-radius: 12px;
-            background: var(--glass);
+            background: var(--glass-bg);
             border: 1px solid var(--glass-border);
             transition: all 0.3s ease;
         }
@@ -597,7 +597,7 @@
         }
 
         .log-message {
-            color: var(--text);
+            color: var(--text-primary);
         }
 
         .log-message.error {
@@ -605,11 +605,15 @@
         }
 
         .log-message.success {
-            color: var(--secondary);
+            color: var(--accent-cyan);
         }
 
         .log-message.warning {
             color: #ffaa00;
+        }
+
+        .log-message.info {
+            color: var(--accent-blue);
         }
 
         /* Properties Panel */
@@ -639,7 +643,7 @@
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid var(--glass-border);
             border-radius: 8px;
-            color: var(--text);
+            color: var(--text-primary);
             font-size: 13px;
             font-weight: 600;
             cursor: pointer;
@@ -687,6 +691,95 @@
 
         .property-value {
             color: var(--accent-cyan);
+        }
+
+        /* SESSION KEY BOX - NEW */
+        .session-key-box {
+            position: fixed;
+            top: 100px;
+            right: 20px;
+            background: rgba(22, 22, 29, 0.95);
+            border: 2px solid rgba(255, 77, 109, 0.5);
+            border-radius: 16px;
+            padding: 20px;
+            max-width: 350px;
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+            animation: slideInRight 0.5s ease;
+        }
+
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(100px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .session-key-box h3 {
+            margin: 0 0 12px 0;
+            color: #ff4d6d;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .key-display {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .key-display code {
+            flex: 1;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 12px;
+            border-radius: 8px;
+            color: #06ffa5;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 14px;
+            word-break: break-all;
+        }
+
+        .key-display button {
+            background: #06ffa5;
+            color: #000;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .key-display button:hover {
+            background: #05dd8a;
+            transform: scale(1.05);
+        }
+
+        .instructions {
+            font-size: 12px;
+            color: #a1a1aa;
+            margin: 0;
+            line-height: 1.5;
+        }
+
+        .instructions strong {
+            color: #e4e4e7;
+        }
+
+        .instructions ol {
+            margin: 8px 0 0 20px;
+            padding: 0;
+        }
+
+        .instructions li {
+            margin: 4px 0;
         }
 
         /* Loading */
@@ -758,6 +851,14 @@
 
             .features-grid {
                 grid-template-columns: 1fr;
+            }
+
+            .session-key-box {
+                top: auto;
+                bottom: 20px;
+                right: 20px;
+                left: 20px;
+                max-width: none;
             }
         }
 
@@ -908,7 +1009,7 @@
                             </div>
                             <div class="log-entry">
                                 <span class="log-time">[00:00:01]</span>
-                                <span class="log-message">Waiting for executor connection...</span>
+                                <span class="log-message info">Waiting for executor connection...</span>
                             </div>
                         </div>
                     </div>
@@ -972,6 +1073,25 @@
         </main>
     </div>
 
+    <!-- SESSION KEY BOX (NEW - Shows after successful auth) -->
+    <div class="session-key-box hidden" id="sessionKeyBox">
+        <h3>Your Session Key</h3>
+        <div class="key-display">
+            <code id="sessionKey">XXXX-XXXX-XXXX-XXXX</code>
+            <button onclick="copyKey()">Copy</button>
+        </div>
+        <p class="instructions">
+            Use this key in the Dex Explorer loader to sync your game data.
+            <br><br>
+            <strong>How to use:</strong>
+            <ol>
+                <li>Execute the loader script in your executor</li>
+                <li>Paste this key when prompted</li>
+                <li>Click "Connect" to start syncing</li>
+            </ol>
+        </p>
+    </div>
+
     <script>
         // Configuration
         const CONFIG = {
@@ -980,7 +1100,8 @@
             REQUIRED_SERVER_ID: '1431480103686246420',
             REQUIRED_ROLE_ID: '1433579851259838464',
             API_ENDPOINT: 'https://discord.com/api/v10',
-            SCOPES: ['identify', 'guilds', 'guilds.members.read']
+            SCOPES: ['identify', 'guilds', 'guilds.members.read'],
+            SYNC_POLL_INTERVAL: 3000 // Poll every 3 seconds
         };
 
         // State
@@ -988,7 +1109,10 @@
             user: null,
             token: null,
             connected: false,
-            sessionStart: Date.now()
+            sessionStart: Date.now(),
+            sessionKey: null,
+            syncData: null,
+            pollInterval: null
         };
 
         // PKCE Helper Functions
@@ -1024,6 +1148,165 @@
             return { codeVerifier, codeChallenge };
         }
 
+        // ============================================
+        // SESSION KEY FUNCTIONS (NEW)
+        // ============================================
+        
+        // Generate session key
+        function generateSessionKey() {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+            let key = '';
+            for (let i = 0; i < 16; i++) {
+                key += chars.charAt(Math.floor(Math.random() * chars.length));
+                if ((i + 1) % 4 === 0 && i < 15) key += '-';
+            }
+            return key;
+        }
+
+        // Show session key after user is verified
+        function showSessionKey() {
+            if (!state.sessionKey) {
+                state.sessionKey = generateSessionKey();
+                saveSession(); // Save to localStorage
+            }
+            
+            document.getElementById('sessionKey').textContent = state.sessionKey;
+            document.getElementById('sessionKeyBox').classList.remove('hidden');
+            
+            addLog('info', 'Session key generated. Copy it to use in Dex Explorer.');
+            
+            // Start polling for sync data
+            startSyncPolling();
+        }
+
+        // Copy key to clipboard
+        function copyKey() {
+            const key = document.getElementById('sessionKey').textContent;
+            navigator.clipboard.writeText(key).then(() => {
+                const btn = event.target;
+                const originalText = btn.textContent;
+                btn.textContent = 'Copied!';
+                btn.style.background = 'rgba(16, 185, 129, 0.8)';
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                    btn.style.background = '';
+                }, 2000);
+                addLog('success', 'Session key copied to clipboard!');
+            });
+        }
+
+        // Start polling for sync data
+        function startSyncPolling() {
+            if (state.pollInterval) {
+                clearInterval(state.pollInterval);
+            }
+            
+            state.pollInterval = setInterval(async () => {
+                if (state.sessionKey) {
+                    await checkSyncStatus();
+                }
+            }, CONFIG.SYNC_POLL_INTERVAL);
+            
+            addLog('info', 'Polling for executor connection...');
+        }
+
+        // Check sync status with backend
+        async function checkSyncStatus() {
+            try {
+                const response = await fetch(`/get-sync/${encodeURIComponent(state.sessionKey)}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    
+                    // Update connection status
+                    if (data.connected !== state.connected) {
+                        state.connected = data.connected;
+                        updateConnectionStatus();
+                        
+                        if (data.connected) {
+                            addLog('success', `Executor connected!`);
+                            document.getElementById('propExecutor').textContent = 'Connected';
+                            document.getElementById('propStatus').textContent = 'Connected';
+                            document.getElementById('propStatus').style.color = '#10b981';
+                        } else {
+                            addLog('warning', 'Executor disconnected');
+                            document.getElementById('propStatus').textContent = 'Disconnected';
+                            document.getElementById('propStatus').style.color = '#ff4444';
+                        }
+                    }
+                    
+                    // Update tree if new data available
+                    if (data.tree && JSON.stringify(data.tree) !== JSON.stringify(state.syncData)) {
+                        state.syncData = data.tree;
+                        updateGameTree(data.tree);
+                        addLog('success', `Game tree updated: ${data.placeName || 'Unknown'}`);
+                        document.getElementById('propGame').textContent = data.placeName || 'Connected';
+                        
+                        // Count objects
+                        let count = 0;
+                        data.tree.forEach(node => {
+                            count++;
+                            if (node.Children) count += node.Children.length;
+                        });
+                        document.getElementById('propObjects').textContent = count;
+                    }
+                }
+            } catch (error) {
+                console.error('[Sync] Status check failed:', error);
+            }
+        }
+
+        // Update game tree display
+        function updateGameTree(tree) {
+            const gameTreeElem = document.getElementById('gameTree');
+            if (!gameTreeElem || !tree) return;
+            
+            gameTreeElem.innerHTML = '';
+            
+            tree.forEach(service => {
+                // Add service
+                const serviceItem = document.createElement('div');
+                serviceItem.className = 'tree-item';
+                serviceItem.innerHTML = `<span>📁</span> ${service.Name}`;
+                gameTreeElem.appendChild(serviceItem);
+                
+                // Add children
+                if (service.Children) {
+                    service.Children.forEach(child => {
+                        const childItem = document.createElement('div');
+                        childItem.className = 'tree-item';
+                        childItem.style.paddingLeft = '32px';
+                        childItem.innerHTML = `<span>📄</span> ${child.Name}`;
+                        childItem.title = child.Class || child.ClassName;
+                        
+                        childItem.onclick = () => {
+                            document.querySelectorAll('.tree-item').forEach(el => el.classList.remove('selected'));
+                            childItem.classList.add('selected');
+                        };
+                        
+                        gameTreeElem.appendChild(childItem);
+                    });
+                }
+            });
+        }
+
+        // Update connection status indicator
+        function updateConnectionStatus() {
+            const statusDot = document.getElementById('statusDot');
+            const statusText = document.getElementById('statusText');
+
+            if (state.connected) {
+                statusDot.classList.remove('disconnected');
+                statusText.textContent = 'Connected';
+            } else {
+                statusDot.classList.add('disconnected');
+                statusText.textContent = 'Waiting for connection';
+            }
+        }
+
+        // ============================================
+        // ORIGINAL FUNCTIONS
+        // ============================================
+
         // Mouse follower effect
         const cursorGlow = document.getElementById('cursorGlow');
         document.addEventListener('mousemove', (e) => {
@@ -1057,6 +1340,7 @@
                 console.log('[Auth] Session found');
                 state.user = session.user;
                 state.token = session.token;
+                state.sessionKey = session.sessionKey; // Load saved session key
                 await verifyAccess();
             } else {
                 showAuthScreen();
@@ -1082,7 +1366,12 @@
             document.getElementById('explorerApp').classList.remove('hidden');
             updateUserSection();
             startSessionTimer();
+            
+            // Show session key and start polling (NEW)
+            showSessionKey();
+            
             addLog('success', 'Access granted! Explorer ready.');
+            addLog('info', 'Execute the loader script in your game to start syncing');
         }
 
         // Login with Discord (PKCE)
@@ -1273,11 +1562,12 @@
             `;
         }
 
-        // Session management
+        // Session management (UPDATED)
         function saveSession() {
             const session = {
                 user: state.user,
                 token: state.token,
+                sessionKey: state.sessionKey, // Save session key
                 timestamp: Date.now()
             };
             localStorage.setItem('lurkout_lite_session', JSON.stringify(session));
@@ -1306,7 +1596,10 @@
 
         function logout() {
             localStorage.removeItem('lurkout_lite_session');
-            state = { user: null, token: null, connected: false };
+            if (state.pollInterval) {
+                clearInterval(state.pollInterval);
+            }
+            state = { user: null, token: null, connected: false, sessionKey: null };
             window.location.reload();
         }
 
@@ -1346,21 +1639,8 @@
 
         // Explorer actions
         function connectExecutor() {
-            addLog('info', 'Attempting to connect to executor...');
-            addLog('warning', 'Make sure the LURKOUT LITE loader is running in your executor');
-            addLog('info', 'Connection instructions:');
-            addLog('info', '1. Execute the LURKOUT LITE loader script');
-            addLog('info', '2. The script will establish a connection via HttpService');
-            addLog('info', '3. Connection status will update automatically');
-            
-            // Simulate connection for demo
-            setTimeout(() => {
-                state.connected = true;
-                updateConnectionStatus();
-                addLog('success', 'Executor connected!');
-                document.getElementById('propExecutor').textContent = 'Synapse X';
-                document.getElementById('propGame').textContent = 'Universal';
-            }, 2000);
+            addLog('info', 'Use the loader script in your executor with your session key');
+            addLog('info', 'Once connected, game data will sync automatically');
         }
 
         function scanGame() {
@@ -1368,62 +1648,37 @@
                 addLog('error', 'Please connect executor first');
                 return;
             }
-            
-            addLog('info', 'Scanning game structure...');
-            addLog('info', 'This may take a few moments...');
-            
-            setTimeout(() => {
-                addLog('success', 'Scan complete!');
-                addLog('info', 'Found 1,247 objects');
-                addLog('info', 'Found 89 scripts');
-                document.getElementById('propObjects').textContent = '1,247';
-                document.getElementById('propScripts').textContent = '89';
-            }, 3000);
+            addLog('info', 'Game scan in progress...');
         }
 
         function refreshTree() {
             addLog('info', 'Refreshing game tree...');
-            setTimeout(() => {
+            if (state.connected && state.syncData) {
+                updateGameTree(state.syncData);
                 addLog('success', 'Tree refreshed');
-            }, 1000);
+            }
         }
 
         function exportTree() {
+            if (!state.syncData) {
+                addLog('error', 'No game data to export');
+                return;
+            }
+            
             addLog('info', 'Exporting game structure...');
-            setTimeout(() => {
-                const data = JSON.stringify({ game: 'structure' }, null, 2);
-                const blob = new Blob([data], { type: 'application/json' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `game-structure-${Date.now()}.json`;
-                a.click();
-                URL.revokeObjectURL(url);
-                addLog('success', 'Structure exported');
-            }, 1500);
+            const data = JSON.stringify(state.syncData, null, 2);
+            const blob = new Blob([data], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `game-structure-${Date.now()}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            addLog('success', 'Structure exported');
         }
 
         function openSettings() {
             addLog('info', 'Settings panel coming soon...');
-        }
-
-        // Update connection status
-        function updateConnectionStatus() {
-            const statusDot = document.getElementById('statusDot');
-            const statusText = document.getElementById('statusText');
-            const propStatus = document.getElementById('propStatus');
-
-            if (state.connected) {
-                statusDot.classList.remove('disconnected');
-                statusText.textContent = 'Connected';
-                propStatus.textContent = 'Connected';
-                propStatus.style.color = 'var(--secondary)';
-            } else {
-                statusDot.classList.add('disconnected');
-                statusText.textContent = 'Disconnected';
-                propStatus.textContent = 'Disconnected';
-                propStatus.style.color = '#ff4444';
-            }
         }
 
         // Session timer
@@ -1438,6 +1693,13 @@
                 document.getElementById('propTime').textContent = timeStr;
             }, 1000);
         }
+
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', () => {
+            if (state.pollInterval) {
+                clearInterval(state.pollInterval);
+            }
+        });
 
         // Start application
         document.addEventListener('DOMContentLoaded', init);
