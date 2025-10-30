@@ -16,20 +16,41 @@
         }
 
         :root {
-            --primary: #ff1e1e;
-            --primary-glow: rgba(255, 30, 30, 0.5);
-            --secondary: #00ff88;
-            --dark: #0a0a0f;
-            --glass: rgba(255, 255, 255, 0.05);
-            --glass-border: rgba(255, 255, 255, 0.1);
-            --text: #e8e8e8;
-            --text-muted: #888;
+            /* Dark Mode Color Palette */
+            --bg-primary: #0d0d12;
+            --bg-secondary: #16161d;
+            --bg-tertiary: #1e1e28;
+            --bg-elevated: #252532;
+            
+            /* Accent Colors */
+            --accent-red: #ff4d6d;
+            --accent-red-glow: rgba(255, 77, 109, 0.3);
+            --accent-cyan: #06ffa5;
+            --accent-cyan-glow: rgba(6, 255, 165, 0.3);
+            --accent-purple: #b794f6;
+            --accent-blue: #4dabf7;
+            
+            /* Text Colors */
+            --text-primary: #e4e4e7;
+            --text-secondary: #a1a1aa;
+            --text-muted: #71717a;
+            
+            /* Glass Effect */
+            --glass-bg: rgba(30, 30, 40, 0.6);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --glass-shadow: rgba(0, 0, 0, 0.5);
+            
+            /* Status Colors */
+            --success: #10b981;
+            --warning: #f59e0b;
+            --error: #ef4444;
+            --info: #3b82f6;
         }
 
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: linear-gradient(135deg, #0a0a0f 0%, #1a0a1f 50%, #0f0a1a 100%);
-            color: var(--text);
+            background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 50%, var(--bg-tertiary) 100%);
+            color: var(--text-primary);
             min-height: 100vh;
             overflow-x: hidden;
             position: relative;
@@ -55,7 +76,7 @@
         .orb-1 {
             width: 400px;
             height: 400px;
-            background: var(--primary);
+            background: var(--accent-red);
             top: -200px;
             left: -200px;
             animation-delay: 0s;
@@ -64,7 +85,7 @@
         .orb-2 {
             width: 300px;
             height: 300px;
-            background: #8b5cf6;
+            background: var(--accent-purple);
             bottom: -150px;
             right: -150px;
             animation-delay: 5s;
@@ -73,7 +94,7 @@
         .orb-3 {
             width: 350px;
             height: 350px;
-            background: var(--secondary);
+            background: var(--accent-cyan);
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
@@ -98,7 +119,7 @@
             width: 300px;
             height: 300px;
             border-radius: 50%;
-            background: radial-gradient(circle, var(--primary-glow) 0%, transparent 70%);
+            background: radial-gradient(circle, var(--accent-red-glow) 0%, transparent 70%);
             pointer-events: none;
             z-index: 9999;
             transform: translate(-50%, -50%);
@@ -146,21 +167,21 @@
         .logo-icon {
             width: 40px;
             height: 40px;
-            background: linear-gradient(135deg, var(--primary), #ff6b6b);
+            background: linear-gradient(135deg, var(--accent-red), var(--accent-purple));
             border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: 900;
             font-size: 20px;
-            box-shadow: 0 0 20px var(--primary-glow);
+            box-shadow: 0 0 20px var(--accent-red-glow);
         }
 
         .logo-text {
             font-size: 24px;
             font-weight: 800;
             letter-spacing: 2px;
-            background: linear-gradient(135deg, var(--primary), #ff6600);
+            background: linear-gradient(135deg, var(--accent-red), var(--accent-cyan));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
@@ -186,8 +207,8 @@
             width: 36px;
             height: 36px;
             border-radius: 50%;
-            border: 2px solid var(--primary);
-            box-shadow: 0 0 10px var(--primary-glow);
+            border: 2px solid var(--accent-red);
+            box-shadow: 0 0 10px var(--accent-red-glow);
         }
 
         .user-name {
@@ -207,24 +228,24 @@
         }
 
         .btn-primary {
-            background: linear-gradient(135deg, var(--primary), #cc0000);
+            background: linear-gradient(135deg, var(--accent-red), var(--accent-purple));
             color: white;
-            box-shadow: 0 4px 15px var(--primary-glow);
+            box-shadow: 0 4px 15px var(--accent-red-glow);
         }
 
         .btn-primary:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px var(--primary-glow);
+            box-shadow: 0 6px 20px var(--accent-red-glow);
         }
 
         .btn-logout {
             background: rgba(255, 255, 255, 0.05);
-            color: var(--primary);
-            border: 1px solid var(--primary);
+            color: var(--accent-red);
+            border: 1px solid var(--accent-red);
         }
 
         .btn-logout:hover {
-            background: var(--primary);
+            background: var(--accent-red);
             color: white;
         }
 
@@ -266,11 +287,10 @@
             font-size: 48px;
             font-weight: 900;
             margin-bottom: 16px;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            background: linear-gradient(135deg, var(--accent-red), var(--accent-cyan));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
-            text-shadow: 0 0 40px var(--primary-glow);
         }
 
         .auth-subtitle {
@@ -321,8 +341,8 @@
 
         .feature-item:hover {
             transform: translateY(-5px);
-            border-color: var(--primary);
-            box-shadow: 0 8px 20px rgba(255, 30, 30, 0.2);
+            border-color: var(--accent-red);
+            box-shadow: 0 8px 20px var(--accent-red-glow);
         }
 
         .feature-icon {
@@ -347,14 +367,14 @@
         .denied-icon {
             font-size: 80px;
             margin-bottom: 20px;
-            filter: drop-shadow(0 0 20px var(--primary));
+            filter: drop-shadow(0 0 20px var(--accent-red));
         }
 
         .denied-title {
             font-size: 32px;
             font-weight: 800;
             margin-bottom: 16px;
-            color: var(--primary);
+            color: var(--accent-red);
         }
 
         .denied-message {
@@ -367,15 +387,15 @@
         .requirements {
             text-align: left;
             padding: 24px;
-            background: rgba(255, 30, 30, 0.1);
-            border: 1px solid rgba(255, 30, 30, 0.3);
+            background: rgba(255, 77, 109, 0.1);
+            border: 1px solid rgba(255, 77, 109, 0.3);
             border-radius: 12px;
             margin-bottom: 30px;
         }
 
         .requirements h4 {
             margin-bottom: 12px;
-            color: var(--primary);
+            color: var(--accent-red);
         }
 
         .requirements ul {
@@ -393,7 +413,7 @@
 
         .requirements li::before {
             content: "✗";
-            color: var(--primary);
+            color: var(--accent-red);
             font-weight: bold;
         }
 
@@ -420,7 +440,7 @@
         .explorer-title {
             font-size: 24px;
             font-weight: 800;
-            color: var(--primary);
+            color: var(--accent-red);
         }
 
         .connection-status {
@@ -428,8 +448,8 @@
             align-items: center;
             gap: 8px;
             padding: 8px 16px;
-            background: rgba(0, 255, 136, 0.1);
-            border: 1px solid rgba(0, 255, 136, 0.3);
+            background: rgba(6, 255, 165, 0.1);
+            border: 1px solid rgba(6, 255, 165, 0.3);
             border-radius: 8px;
             font-size: 13px;
             font-weight: 600;
@@ -439,8 +459,8 @@
             width: 8px;
             height: 8px;
             border-radius: 50%;
-            background: var(--secondary);
-            box-shadow: 0 0 10px var(--secondary);
+            background: var(--accent-cyan);
+            box-shadow: 0 0 10px var(--accent-cyan);
             animation: pulse 2s ease-in-out infinite;
         }
 
@@ -498,12 +518,12 @@
         }
 
         .tree-item:hover {
-            background: rgba(255, 30, 30, 0.1);
+            background: rgba(255, 77, 109, 0.1);
         }
 
         .tree-item.selected {
-            background: rgba(255, 30, 30, 0.2);
-            border-left: 3px solid var(--primary);
+            background: rgba(255, 77, 109, 0.2);
+            border-left: 3px solid var(--accent-red);
         }
 
         /* Output Console */
@@ -549,8 +569,8 @@
         }
 
         .icon-btn:hover {
-            background: rgba(255, 30, 30, 0.2);
-            border-color: var(--primary);
+            background: rgba(255, 77, 109, 0.2);
+            border-color: var(--accent-red);
         }
 
         .console-output {
@@ -631,8 +651,8 @@
         }
 
         .action-btn:hover {
-            background: rgba(255, 30, 30, 0.2);
-            border-color: var(--primary);
+            background: rgba(255, 77, 109, 0.2);
+            border-color: var(--accent-red);
             transform: translateX(3px);
         }
 
@@ -666,7 +686,7 @@
         }
 
         .property-value {
-            color: var(--secondary);
+            color: var(--accent-cyan);
         }
 
         /* Loading */
@@ -679,7 +699,7 @@
             width: 50px;
             height: 50px;
             border: 4px solid rgba(255, 255, 255, 0.1);
-            border-top-color: var(--primary);
+            border-top-color: var(--accent-red);
             border-radius: 50%;
             animation: spin 1s linear infinite;
             margin: 0 auto 20px;
@@ -702,12 +722,12 @@
         }
 
         ::-webkit-scrollbar-thumb {
-            background: rgba(255, 30, 30, 0.5);
+            background: rgba(255, 77, 109, 0.5);
             border-radius: 4px;
         }
 
         ::-webkit-scrollbar-thumb:hover {
-            background: rgba(255, 30, 30, 0.7);
+            background: rgba(255, 77, 109, 0.7);
         }
 
         /* Responsive */
@@ -956,10 +976,11 @@
         // Configuration
         const CONFIG = {
             DISCORD_CLIENT_ID: '1432798922757115985',
-            REDIRECT_URI: window.location.origin + '/auth/callback',
+            REDIRECT_URI: window.location.origin + '/',
             REQUIRED_SERVER_ID: '1431480103686246420',
             REQUIRED_ROLE_ID: '1433579851259838464',
-            API_ENDPOINT: 'https://discord.com/api/v10'
+            API_ENDPOINT: 'https://discord.com/api/v10',
+            SCOPES: ['identify', 'guilds', 'guilds.members.read']
         };
 
         // State
@@ -969,6 +990,39 @@
             connected: false,
             sessionStart: Date.now()
         };
+
+        // PKCE Helper Functions
+        function generateRandomString(length) {
+            const charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~';
+            let result = '';
+            const randomValues = new Uint8Array(length);
+            crypto.getRandomValues(randomValues);
+            for (let i = 0; i < length; i++) {
+                result += charset[randomValues[i] % charset.length];
+            }
+            return result;
+        }
+
+        function base64URLEncode(buffer) {
+            return btoa(String.fromCharCode(...new Uint8Array(buffer)))
+                .replace(/\+/g, '-')
+                .replace(/\//g, '_')
+                .replace(/=/g, '');
+        }
+
+        async function sha256(plain) {
+            const encoder = new TextEncoder();
+            const data = encoder.encode(plain);
+            return await crypto.subtle.digest('SHA-256', data);
+        }
+
+        async function generatePKCE() {
+            const codeVerifier = generateRandomString(128);
+            const hashed = await sha256(codeVerifier);
+            const codeChallenge = base64URLEncode(hashed);
+            
+            return { codeVerifier, codeChallenge };
+        }
 
         // Mouse follower effect
         const cursorGlow = document.getElementById('cursorGlow');
@@ -1031,41 +1085,89 @@
             addLog('success', 'Access granted! Explorer ready.');
         }
 
-        // Login with Discord
-        document.getElementById('loginBtn')?.addEventListener('click', () => {
-            const authUrl = `https://discord.com/api/oauth2/authorize?client_id=${CONFIG.DISCORD_CLIENT_ID}&redirect_uri=${encodeURIComponent(CONFIG.REDIRECT_URI)}&response_type=code&scope=identify+guilds+guilds.members.read`;
-            window.location.href = authUrl;
+        // Login with Discord (PKCE)
+        document.getElementById('loginBtn')?.addEventListener('click', async () => {
+            try {
+                // Generate PKCE values
+                const { codeVerifier, codeChallenge } = await generatePKCE();
+                const state = generateRandomString(32);
+                
+                // Store for later use
+                sessionStorage.setItem('pkce_code_verifier', codeVerifier);
+                sessionStorage.setItem('oauth_state', state);
+                
+                // Build OAuth URL with PKCE
+                const params = new URLSearchParams({
+                    client_id: CONFIG.DISCORD_CLIENT_ID,
+                    redirect_uri: CONFIG.REDIRECT_URI,
+                    response_type: 'code',
+                    scope: CONFIG.SCOPES.join(' '),
+                    state: state,
+                    code_challenge: codeChallenge,
+                    code_challenge_method: 'S256',
+                    prompt: 'none'
+                });
+                
+                const authUrl = `https://discord.com/api/oauth2/authorize?${params.toString()}`;
+                window.location.href = authUrl;
+            } catch (error) {
+                console.error('[Auth] Login error:', error);
+                addLog('error', 'Failed to initiate login: ' + error.message);
+            }
         });
 
-        // Handle OAuth callback
+        // Handle OAuth callback (PKCE - No Client Secret!)
         async function handleOAuthCallback(code) {
             try {
-                addLog('info', 'Exchanging OAuth code...');
+                addLog('info', 'Processing OAuth callback...');
                 
-                // In production, this should be done server-side
-                // For demo, we'll simulate the flow
+                // Verify state to prevent CSRF
+                const urlParams = new URLSearchParams(window.location.search);
+                const returnedState = urlParams.get('state');
+                const savedState = sessionStorage.getItem('oauth_state');
+                
+                if (returnedState !== savedState) {
+                    throw new Error('State mismatch - possible CSRF attack');
+                }
+                
+                // Get code verifier
+                const codeVerifier = sessionStorage.getItem('pkce_code_verifier');
+                if (!codeVerifier) {
+                    throw new Error('Missing PKCE code verifier');
+                }
+                
+                // Exchange code for token (PKCE - no client secret needed!)
+                const tokenParams = new URLSearchParams({
+                    client_id: CONFIG.DISCORD_CLIENT_ID,
+                    code: code,
+                    grant_type: 'authorization_code',
+                    redirect_uri: CONFIG.REDIRECT_URI,
+                    code_verifier: codeVerifier
+                });
+
+                addLog('info', 'Exchanging code for token...');
+                
                 const tokenResponse = await fetch(`${CONFIG.API_ENDPOINT}/oauth2/token`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/x-www-form-urlencoded',
                     },
-                    body: new URLSearchParams({
-                        client_id: CONFIG.DISCORD_CLIENT_ID,
-                        client_secret: 'YOUR_CLIENT_SECRET', // Must be server-side
-                        grant_type: 'authorization_code',
-                        code: code,
-                        redirect_uri: CONFIG.REDIRECT_URI
-                    })
+                    body: tokenParams.toString()
                 });
 
                 if (!tokenResponse.ok) {
-                    throw new Error('Token exchange failed');
+                    const errorText = await tokenResponse.text();
+                    console.error('[Auth] Token exchange failed:', errorText);
+                    throw new Error('Token exchange failed: ' + tokenResponse.status);
                 }
 
                 const tokenData = await tokenResponse.json();
                 state.token = tokenData.access_token;
+                
+                addLog('success', 'Token received!');
 
                 // Fetch user info
+                addLog('info', 'Fetching user info...');
                 const userResponse = await fetch(`${CONFIG.API_ENDPOINT}/users/@me`, {
                     headers: {
                         'Authorization': `Bearer ${state.token}`
@@ -1077,9 +1179,15 @@
                 }
 
                 state.user = await userResponse.json();
-                saveSession();
+                addLog('success', `Logged in as ${state.user.username}`);
                 
+                // Clean up session storage
+                sessionStorage.removeItem('pkce_code_verifier');
+                sessionStorage.removeItem('oauth_state');
+                
+                saveSession();
                 await verifyAccess();
+                
             } catch (error) {
                 console.error('[Auth] OAuth callback error:', error);
                 addLog('error', 'Authentication failed: ' + error.message);
