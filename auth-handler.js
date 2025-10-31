@@ -11,7 +11,14 @@ const CONFIG = {
     REDIRECT_URI: 'https://lurkout.app/auth/callback',
     REQUIRED_SERVER_ID: '1431480103686246420',
     REQUIRED_ROLE_ID: '1433579851259838464',
-    API_ENDPOINT: 'https://discord.com/api/v10'
+    API_ENDPOINT: 'https://discord.com/api/v10',
+    // Appwrite Configuration
+    APPWRITE_PROJECT_ID: '6904e9f0002a87c6eb1f',
+    APPWRITE_DATABASE_ID: 'lurkout-db',
+    APPWRITE_USERS_COLLECTION: 'users',
+    APPWRITE_PLAYERS_COLLECTION: 'player_lists',
+    APPWRITE_API_KEY: 'standard_3b70cbb723e21a8ac2fa83cdb599637b92dfcbd36261b0dd7d4e52a8aa89446a60c45c89017f9681eedb0984bca0b7879ca3c97587522369c92d05a8988a5129033c557a000509e5deb699146e529bdae1cdfd04681e6d147135c6c81da47737f2ab5a50fce96c6b1d3d87cf762236fcd82dd9ef7896a13a06963990c84bd2a6E',
+    APPWRITE_ENDPOINT: 'https://cloud.appwrite.io/v1'
 };
 
 // ============================================
@@ -299,7 +306,110 @@ router.get('/test-sync', (req, res) => {
     });
 });
 
+// ============================================
+// APPWRITE PROXY ENDPOINTS (for Lua loader)
+// ============================================
+
+// POST /api/appwrite/users - Create user document (proxied from Lua)
+router.post('/api/appwrite/users', express.json(), async (req, res) => {
+    try {
+        const { user_key, username } = req.body;
+        
+        if (!user_key || !username) {
+            return res.status(400).json({ error: 'user_key and username are required' });
+        }
+
+        const url = `${CONFIG.APPWRITE_ENDPOINT}/databases/${CONFIG.APPWRITE_DATABASE_ID}/collections/${CONFIG.APPWRITE_USERS_COLLECTION}/documents`;
+        
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Appwrite-Project': CONFIG.APPWRITE_PROJECT_ID,
+                'X-Appwrite-Key': CONFIG.APPWRITE_API_KEY
+            },
+            body: JSON.stringify({
+                documentId: 'unique()',
+                data: {
+                    user_key: user_key,
+                    username: username,
+                    is_active: true,
+                    last_active: new Date().toISOString()
+                }
+            })
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('[Appwrite] Create user failed:', response.status, errorText);
+            return res.status(response.status).json({ 
+                error: 'Failed to create user document',
+                details: errorText 
+            });
+        }
+
+        const data = await response.json();
+        console.log(`[Appwrite] ✓ Created user document for key: ${user_key.substring(0, 8)}...`);
+        
+        res.json({ success: true, data: data });
+        
+    } catch (error) {
+        console.error('[Appwrite] ✗ Error creating user:', error);
+        res.status(500).json({ error: 'Server error: ' + error.message });
+    }
+});
+
+// POST /api/appwrite/players - Send player list (proxied from Lua)
+router.post('/api/appwrite/players', express.json(), async (req, res) => {
+    try {
+        const { user_key, game_name, players, timestamp } = req.body;
+        
+        if (!user_key) {
+            return res.status(400).json({ error: 'user_key is required' });
+        }
+
+        const url = `${CONFIG.APPWRITE_ENDPOINT}/databases/${CONFIG.APPWRITE_DATABASE_ID}/collections/${CONFIG.APPWRITE_PLAYERS_COLLECTION}/documents`;
+        
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Appwrite-Project': CONFIG.APPWRITE_PROJECT_ID,
+                'X-Appwrite-Key': CONFIG.APPWRITE_API_KEY
+            },
+            body: JSON.stringify({
+                documentId: 'unique()',
+                data: {
+                    user_key: user_key,
+                    game_name: game_name || 'Unknown Place',
+                    players: typeof players === 'string' ? players : JSON.stringify(players || []),
+                    timestamp: timestamp || new Date().toISOString()
+                }
+            })
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('[Appwrite] Send players failed:', response.status, errorText);
+            return res.status(response.status).json({ 
+                error: 'Failed to send player list',
+                details: errorText 
+            });
+        }
+
+        const data = await response.json();
+        console.log(`[Appwrite] ✓ Sent player list for key: ${user_key.substring(0, 8)}...`);
+        
+        res.json({ success: true, data: data });
+        
+    } catch (error) {
+        console.error('[Appwrite] ✗ Error sending players:', error);
+        res.status(500).json({ error: 'Server error: ' + error.message });
+    }
+});
+
 console.log('[Auth] Discord OAuth endpoints initialized');
 console.log('[Sync] Sync endpoints initialized: POST /update-sync, GET /get-sync/:key, GET /test-sync');
+console.log('[Appwrite] Proxy endpoints initialized: POST /api/appwrite/users, POST /api/appwrite/players');
 
 module.exports = router;
