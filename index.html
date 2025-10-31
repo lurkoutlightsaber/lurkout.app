@@ -1,4 +1,3 @@
-<!-- indexxx.txt -->
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -66,14 +65,11 @@
             </div>
           `;
 
-          const connectBtn = document.getElementById("connectBtn");
-          if (connectBtn) {
-            connectBtn.onclick = async () => {
-              const key = document.getElementById("pairKey").value.trim();
-              if (!key) return;
-              await verifyPairing(key);
-            };
-          }
+          document.getElementById("connectBtn").onclick = async () => {
+            const key = document.getElementById("pairKey").value.trim();
+            if (!key) return;
+            await verifyPairing(key);
+          };
           return;
         }
 
@@ -102,7 +98,7 @@
               </div>
               ${
                 state.lastUpdate
-                  ? `<span class="text-sm text-slate-400">Last update: ${new Date(state.lastUpdate).toLocaleTimeString()}</span>`
+                  ? `<span class="text-sm text-slate-400">Last update: ${state.lastUpdate.toLocaleTimeString()}</span>`
                   : ""
               }
             </div>
@@ -132,12 +128,12 @@
                           (p) => `
                           <div class="bg-slate-700/50 border border-slate-600/30 rounded-lg p-4 hover:bg-slate-700/70 transition-colors">
                             <div class="flex items-center space-x-3">
-                              <div class="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center font-bold text-white">
-                                ${p.name?.charAt(0)?.toUpperCase() || "?"}
+                              <div class="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center font-bold">
+                                ${p.name?.charAt(0) || "?"}
                               </div>
                               <div class="flex-1 min-w-0">
-                                <p class="font-medium truncate text-white">${p.name || "Unknown"}</p>
-                                ${p.team && p.team !== "None" ? `<p class="text-xs text-slate-400">Team: ${p.team}</p>` : ""}
+                                <p class="font-medium truncate">${p.name || "Unknown"}</p>
+                                ${p.team ? `<p class="text-xs text-slate-400">Team: ${p.team}</p>` : ""}
                               </div>
                             </div>
                           </div>`
@@ -148,61 +144,50 @@
             </div>
 
             <div class="bg-slate-800/30 rounded-xl border border-slate-700/30 p-4 text-center text-sm text-slate-400">
-              Your connection is secure • Data syncs in real time from your loader
+              🔒 Your connection is secure • Data syncs in real time from your loader
             </div>
           </div>
         `;
 
-        const disconnectBtn = document.getElementById("disconnectBtn");
-        if (disconnectBtn) {
-          disconnectBtn.onclick = disconnect;
-        }
+        document.getElementById("disconnectBtn").onclick = disconnect;
       }
 
       async function verifyPairing(key) {
         state.loading = true;
         state.error = "";
         render();
-
         try {
           const res = await databases.listDocuments(DATABASE_ID, USERS_COLLECTION, [
             Query.equal("user_key", key),
             Query.limit(1),
           ]);
-
           if (res.documents.length > 0) {
-            const doc = res.documents[0];
             state.isPaired = true;
-            state.username = doc.username || "User";
-            state.userKey = key;
+            state.username = res.documents[0].username;
             localStorage.setItem("lurkout_key", key);
             await loadPlayerList(key);
             subscribeRealtime(key);
           } else {
-            state.error = "Invalid pairing key. Try again.";
+            state.error = "Invalid pairing key";
           }
         } catch (e) {
-          console.error("Pairing error:", e);
-          state.error = "Connection failed: " + (e.message || "Unknown error");
-        } finally {
-          state.loading = false;
-          render();
+          state.error = "Connection error: " + e.message;
         }
+        state.loading = false;
+        render();
       }
 
       async function loadPlayerList(key) {
         try {
           const res = await databases.listDocuments(DATABASE_ID, PLAYERS_COLLECTION, [
             Query.equal("user_key", key),
-            Query.orderDesc("$createdAt"),
+            Query.orderDesc("timestamp"),
             Query.limit(1),
           ]);
-
           if (res.documents.length > 0) {
-            const doc = res.documents[0];
-            const players = JSON.parse(doc.players || "[]");
+            const players = JSON.parse(res.documents[0].players || "[]");
             state.playerList = players;
-            state.lastUpdate = doc.$createdAt;
+            state.lastUpdate = new Date(res.documents[0].timestamp);
           }
         } catch (err) {
           console.error("Error loading player list:", err);
@@ -210,54 +195,28 @@
       }
 
       function subscribeRealtime(key) {
-        // Unsubscribe previous
-        if (state.subscription) {
-          state.subscription();
-        }
-
-        state.subscription = client.subscribe(
+        client.subscribe(
           `databases.${DATABASE_ID}.collections.${PLAYERS_COLLECTION}.documents`,
           (response) => {
-            if (response.payload && response.payload.user_key === key) {
-              try {
-                const players = JSON.parse(response.payload.players || "[]");
-                state.playerList = players;
-                state.lastUpdate = response.payload.$createdAt || new Date().toISOString();
-                render();
-              } catch (e) {
-                console.error("Failed to parse player data:", e);
-              }
+            if (response.payload.user_key === key) {
+              const players = JSON.parse(response.payload.players || "[]");
+              state.playerList = players;
+              state.lastUpdate = new Date(response.payload.timestamp);
+              render();
             }
           }
         );
       }
 
       function disconnect() {
-        if (state.subscription) {
-          state.subscription();
-          state.subscription = null;
-        }
         localStorage.removeItem("lurkout_key");
-        state = {
-          ...state,
-          isPaired: false,
-          userKey: "",
-          username: "",
-          playerList: [],
-          lastUpdate: null,
-          loading: false,
-          error: "",
-          subscription: null
-        };
+        state = { ...state, isPaired: false, userKey: "", username: "", playerList: [] };
         render();
       }
 
-      // Auto-reconnect on load
-      if (state.userKey) {
-        verifyPairing(state.userKey);
-      } else {
-        render();
-      }
+      // Auto reconnect if saved key
+      if (state.userKey) verifyPairing(state.userKey);
+      else render();
     </script>
   </body>
 </html>
