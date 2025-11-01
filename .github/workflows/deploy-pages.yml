@@ -1,0 +1,31 @@
+name: Deploy static site to GitHub Pages
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Create config.json from secrets
+      run: |
+        cat > config.json <<EOF
+        {
+          "endpoint": "${{ secrets.APPWRITE_ENDPOINT }}",
+          "project": "${{ secrets.APPWRITE_PROJECT_ID }}",
+          "database": "${{ secrets.APPWRITE_DATABASE_ID }}"
+        }
+        EOF
+
+    - name: Deploy to GitHub Pages
+      uses: peaceiris/actions-gh-pages@v4
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./
