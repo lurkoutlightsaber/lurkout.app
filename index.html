@@ -133,15 +133,16 @@
         const REQUIRED_SERVER_ID = '1431480103686246420';
         const REQUIRED_ROLE_ID = '1433579851259838464';
 
-        // Initialize Appwrite (configured via GitHub Actions from repository secrets)
+        // Initialize Appwrite (configured via GitHub Actions-generated config.json)
         async function initializeAppwrite() {
             try {
-                const response = await fetch('/.netlify/functions/get-appwrite-config');
+                const response = await fetch('/config.json');
                 const config = await response.json();
                 
                 const sdk = new Appwrite();
                 sdk.setEndpoint('https://cloud.appwrite.io/v1')
-                   .setProject(config.APPWRITE_PROJECT_ID);
+                   .setProject(config.APPWRITE_PROJECT_ID)
+                   .setKey(config.APPWRITE_API_KEY);
                 
                 window._lurkoutSDK = sdk;
                 window._lurkoutConfig = config;
