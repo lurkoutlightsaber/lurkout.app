@@ -1,211 +1,304 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
+<head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>Lurkout · Dashboard</title>
-    <script src="https://cdn.jsdelivr.net/npm/appwrite@13.0.0/dist/appwrite.min.js"></script>
     <style>
-      :root{--bg:#060608;--panel:#0f1012;--muted:#9aa4b2;--accent:#ff2d55;--glass:rgba(255,255,255,0.03)}
-      *{box-sizing:border-box;font-family:Inter,ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial}
-      body{margin:0;background:linear-gradient(180deg,#050608 0%, #0b0d10 100%);color:#e6eef8;min-height:100vh}
-      .wrap{max-width:1100px;margin:28px auto;padding:18px}
-      header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
-      h1{font-weight:700;letter-spacing:1px}
-      .muted{color:var(--muted)}
-      .grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
-      .card{background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.04);backdrop-filter:blur(8px);padding:16px;border-radius:12px}
-      .btn{background:linear-gradient(90deg,var(--accent),#b91c38);border:none;color:white;padding:8px 12px;border-radius:10px;cursor:pointer}
-      .btn.ghost{background:transparent;border:1px solid rgba(255,255,255,0.04)}
-      .row{display:flex;gap:8px}
-      input{width:100%;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit}
-      .center{display:flex;align-items:center;justify-content:center}
-      .hidden{display:none}
-      pre.code{background:rgba(0,0,0,0.25);padding:12px;border-radius:8px;max-height:260px;overflow:auto}
-      footer{text-align:center;margin-top:18px;color:var(--muted)}
-      /* small login card */
-      .loginCard{max-width:480px;margin:40px auto;padding:22px;border-radius:14px}
-      .logo{display:flex;gap:10px;align-items:center}
-      .logo .dot{width:34px;height:34px;border-radius:8px;background:linear-gradient(180deg,var(--accent),#b91c38);box-shadow:0 6px 20px rgba(255,45,85,0.12)}
+        :root{--bg:#060608;--panel:#0f1012;--muted:#9aa4b2;--accent:#ff2d55;--glass:rgba(255,255,255,0.03)}
+        *{box-sizing:border-box;font-family:Inter,ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial}
+        body{margin:0;background:linear-gradient(180deg,#050608 0%, #0b0d10 100%);color:#e6eef8;min-height:100vh}
+        .wrap{max-width:1100px;margin:28px auto;padding:18px}
+        header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+        h1{font-weight:700;letter-spacing:1px}
+        .muted{color:var(--muted)}
+        .grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+        .card{background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.04);backdrop-filter:blur(8px);padding:16px;border-radius:12px}
+        .btn{background:linear-gradient(90deg,var(--accent),#b91c38);border:none;color:white;padding:8px 12px;border-radius:10px;cursor:pointer}
+        .btn.ghost{background:transparent;border:1px solid rgba(255,255,255,0.04)}
+        .row{display:flex;gap:8px}
+        input{width:100%;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit}
+        .center{display:flex;align-items:center;justify-content:center}
+        .hidden{display:none}
+        pre.code{background:rgba(0,0,0,0.25);padding:12px;border-radius:8px;max-height:260px;overflow:auto}
+        footer{text-align:center;margin-top:18px;color:var(--muted)}
+        .loginCard{max-width:480px;margin:40px auto;padding:22px;border-radius:14px}
+        .logo{display:flex;gap:10px;align-items:center}
+        .logo .dot{width:34px;height:34px;border-radius:8px;background:linear-gradient(180deg,var(--accent),#b91c38);box-shadow:0 6px 20px rgba(255,45,85,0.12)}
     </style>
-  </head>
-  <body>
+</head>
+<body>
     <div class="wrap">
-      <header>
-        <div class="logo"><div class="dot"></div><h1>Lurkout</h1></div>
-        <div id="userArea"></div>
-      </header>
+        <header>
+            <div class="logo"><div class="dot"></div><h1>Lurkout</h1></div>
+            <div id="userArea"></div>
+        </header>
 
-      <main id="mainArea">
-        <!-- Login screen shown when not authenticated -->
-        <section id="loginScreen" class="card loginCard center">
-          <div style="width:100%">
-            <h2>Sign in to Lurkout</h2>
-            <p class="muted">Use Discord to sign in. You will need to attach an email before using the dashboard.</p>
-            <div class="row" style="margin-top:12px">
-              <button id="btnLogin" class="btn">Sign in with Discord</button>
-              <button id="btnHow" class="btn ghost">How it works</button>
-            </div>
-            <p class="muted small" style="margin-top:12px">Make sure your Appwrite project has Discord OAuth enabled and redirect URL set to this page.</p>
-          </div>
-        </section>
+        <main id="mainArea">
+            <section id="loginScreen" class="card loginCard center">
+                <div style="width:100%">
+                    <h2>Sign in to Lurkout</h2>
+                    <p class="muted">Use Discord to sign in and access the dashboard.</p>
+                    <div class="row" style="margin-top:12px">
+                        <button id="btnLogin" class="btn">Sign in with Discord</button>
+                    </div>
+                </div>
+            </section>
 
-        <!-- Dashboard: hidden until login -->
-        <section id="dashboard" class="hidden">
-          <div class="grid">
-            <div>
-              <div class="card">
-                <h3>Account</h3>
-                <p id="accountInfo" class="muted">—</p>
-                <label class="muted small">Email (attach):<input id="emailInput" placeholder="you@domain.com"></label>
-                <div class="row"><button id="attachEmail" class="btn small">Attach email</button><button id="btnLogout" class="btn ghost small">Logout</button></div>
-              </div>
-
-              <div class="card" style="margin-top:12px">
-                <h3>Checkpoints</h3>
-                <label class="muted small">Name: <input id="checkpointName"></label>
-                <label class="muted small">Notes: <input id="checkpointNotes"></label>
-                <div class="row" style="margin-top:8px"><button id="saveCheckpoint" class="btn small">Save</button><button id="listCheckpoints" class="btn ghost small">Refresh</button></div>
-                <ul id="checkpointList" class="muted" style="margin-top:10px;padding-left:0;list-style:none"></ul>
-              </div>
-            <!doctype html>
-            <html lang="en">
-              <head>
-                <meta charset="utf-8" />
-                <meta name="viewport" content="width=device-width,initial-scale=1" />
-                <title>Lurkout · Dashboard</title>
-                <script src="https://cdn.jsdelivr.net/npm/appwrite@13.0.0/dist/appwrite.min.js"></script>
-                <style>
-                  :root{--bg:#060608;--panel:#0f1012;--muted:#9aa4b2;--accent:#ff2d55;--glass:rgba(255,255,255,0.03)}
-                  *{box-sizing:border-box;font-family:Inter,ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial}
-                  body{margin:0;background:linear-gradient(180deg,#050608 0%, #0b0d10 100%);color:#e6eef8;min-height:100vh}
-                  .wrap{max-width:1100px;margin:28px auto;padding:18px}
-                  header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
-                  h1{font-weight:700;letter-spacing:1px}
-                  .muted{color:var(--muted)}
-                  .grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
-                  .card{background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.04);backdrop-filter:blur(8px);padding:16px;border-radius:12px}
-                  .btn{background:linear-gradient(90deg,var(--accent),#b91c38);border:none;color:white;padding:8px 12px;border-radius:10px;cursor:pointer}
-                  .btn.ghost{background:transparent;border:1px solid rgba(255,255,255,0.04)}
-                  .row{display:flex;gap:8px}
-                  input{width:100%;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit}
-                  .center{display:flex;align-items:center;justify-content:center}
-                  .hidden{display:none}
-                  pre.code{background:rgba(0,0,0,0.25);padding:12px;border-radius:8px;max-height:260px;overflow:auto}
-                  footer{text-align:center;margin-top:18px;color:var(--muted)}
-                  .loginCard{max-width:480px;margin:40px auto;padding:22px;border-radius:14px}
-                  .logo{display:flex;gap:10px;align-items:center}
-                  .logo .dot{width:34px;height:34px;border-radius:8px;background:linear-gradient(180deg,var(--accent),#b91c38);box-shadow:0 6px 20px rgba(255,45,85,0.12)}
-                </style>
-              </head>
-              <body>
-                <div class="wrap">
-                  <header>
-                    <div class="logo"><div class="dot"></div><h1>Lurkout</h1></div>
-                    <div id="userArea"></div>
-                  </header>
-
-                  <main id="mainArea">
-                    <section id="loginScreen" class="card loginCard center">
-                      <div style="width:100%">
-                        <h2>Sign in to Lurkout</h2>
-                        <p class="muted">Use Discord to sign in. The dashboard is only visible after authentication.</p>
-                        <div class="row" style="margin-top:12px">
-                          <button id="btnLogin" class="btn">Sign in with Discord</button>
-                        </div>
-                        <p class="muted small" style="margin-top:12px">Redirect URL must be configured in Appwrite and Discord. Deployment injects `config.json` via GitHub Actions from repository secrets.</p>
-                      </div>
-                    </section>
-
-                    <section id="dashboard" class="hidden">
-                      <div class="grid">
-                        <div>
-                          <div class="card">
+            <section id="dashboard" class="hidden">
+                <div class="grid">
+                    <div>
+                        <div class="card">
                             <h3>Account</h3>
                             <p id="accountInfo" class="muted">—</p>
-                            <label class="muted small">Email (attach):<input id="emailInput" placeholder="you@domain.com"></label>
-                            <div class="row"><button id="attachEmail" class="btn small">Attach email</button><button id="btnLogout" class="btn ghost small">Logout</button></div>
-                          </div>
+                            <div class="row">
+                                <button id="btnLogout" class="btn ghost small">Logout</button>
+                            </div>
+                        </div>
 
-                          <div class="card" style="margin-top:12px">
+                        <div class="card" style="margin-top:12px">
                             <h3>Checkpoints</h3>
                             <label class="muted small">Name: <input id="checkpointName"></label>
                             <label class="muted small">Notes: <input id="checkpointNotes"></label>
-                            <div class="row" style="margin-top:8px"><button id="saveCheckpoint" class="btn small">Save</button><button id="listCheckpoints" class="btn ghost small">Refresh</button></div>
+                            <div class="row" style="margin-top:8px">
+                                <button id="saveCheckpoint" class="btn small">Save</button>
+                                <button id="listCheckpoints" class="btn ghost small">Refresh</button>
+                            </div>
                             <ul id="checkpointList" class="muted" style="margin-top:10px;padding-left:0;list-style:none"></ul>
-                          </div>
                         </div>
+                    </div>
 
-                        <div>
-                          <div class="card">
+                    <div>
+                        <div class="card">
                             <h3>Script Generator</h3>
                             <label class="muted small">Script title: <input id="scriptTitle"></label>
                             <label class="muted small">Webhook (optional): <input id="webhookUrl"></label>
-                            <div class="row" style="margin-top:8px"><button id="generateScript" class="btn small">Generate .lua</button><button id="downloadLink" class="btn ghost small hidden" download="lurkout.lua">Download</button></div>
+                            <div class="row" style="margin-top:8px">
+                                <button id="generateScript" class="btn small">Generate .lua</button>
+                                <button id="downloadLink" class="btn ghost small hidden" download="lurkout.lua">Download</button>
+                            </div>
                             <pre id="scriptPreview" class="code"></pre>
-                          </div>
-
-                          <div class="card" style="margin-top:12px">
-                            <h3>Settings</h3>
-                            <label class="muted small">Appwrite project: <input id="cfgProject"></label>
-                            <label class="muted small">Database ID: <input id="cfgDatabase"></label>
-                            <div class="row" style="margin-top:8px"><button id="saveCfg" class="btn small">Save</button><button id="resetCfg" class="btn ghost small">Reset</button></div>
-                            <p class="muted small" style="margin-top:8px">Project id prefills for convenience. Database must match your Appwrite collections (users, checkpoints).</p>
-                          </div>
                         </div>
-                      </div>
-                    </section>
-                  </main>
-
-                  <footer class="muted">Lurkout · Glassmorphic UI</footer>
+                    </div>
                 </div>
+            </section>
+        </main>
 
-                <script>
-                  // fetch injected config (written by GitHub Actions during deploy)
-                  async function loadConfig(){
-                    try{
-                      const r = await fetch('/config.json', {cache:'no-cache'});
-                      if(!r.ok) throw new Error('no config');
-                      return await r.json();
-                    }catch(e){
-                      return JSON.parse(localStorage.getItem('lurkout_cfg')||'{}');
+        <footer class="muted">Lurkout · Glassmorphic UI</footer>
+    </div>
+
+    <script>
+        // Discord OAuth constants
+        const DISCORD_CLIENT_ID = '1432798922757115985';
+        const DISCORD_REDIRECT_URI = window.location.origin;
+        const DISCORD_SCOPE = 'identify guilds guilds.join guilds.members.read';
+        const REQUIRED_SERVER_ID = '1431480103686246420';
+        const REQUIRED_ROLE_ID = '1433579851259838464';
+
+        // PKCE Code Verifier
+        function generateCodeVerifier() {
+            const array = new Uint8Array(32);
+            crypto.getRandomValues(array);
+            return Array.from(array, dec => ('0' + dec.toString(16)).substr(-2)).join('');
+        }
+
+        // PKCE Code Challenge
+        async function generateCodeChallenge(verifier) {
+            const encoder = new TextEncoder();
+            const data = encoder.encode(verifier);
+            const digest = await crypto.subtle.digest('SHA-256', data);
+            return btoa(String.fromCharCode(...new Uint8Array(digest)))
+                .replace(/\+/g, '-')
+                .replace(/\//g, '_')
+                .replace(/=/g, '');
+        }
+
+        // UI refs
+        const loginScreen = document.getElementById('loginScreen');
+        const dashboard = document.getElementById('dashboard');
+        const btnLogin = document.getElementById('btnLogin');
+        const btnLogout = document.getElementById('btnLogout');
+        const userArea = document.getElementById('userArea');
+        const accountInfo = document.getElementById('accountInfo');
+
+        function renderAuth(user) {
+            if (user) {
+                loginScreen.classList.add('hidden');
+                dashboard.classList.remove('hidden');
+                userArea.textContent = user.username;
+                accountInfo.textContent = `Signed in as ${user.username}`;
+            } else {
+                loginScreen.classList.remove('hidden');
+                dashboard.classList.add('hidden');
+                userArea.textContent = '';
+                accountInfo.textContent = '—';
+            }
+        }
+
+        // Handle OAuth callback
+        async function handleCallback(code, verifier) {
+            const tokenResponse = await fetch('https://discord.com/api/oauth2/token', {
+                method: 'POST',
+                body: new URLSearchParams({
+                    client_id: DISCORD_CLIENT_ID,
+                    grant_type: 'authorization_code',
+                    code: code,
+                    redirect_uri: DISCORD_REDIRECT_URI,
+                    code_verifier: verifier
+                }),
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                }
+            });
+
+            const tokenData = await tokenResponse.json();
+            if (!tokenData.access_token) {
+                throw new Error('Failed to get access token');
+            }
+
+            // Get user data
+            const userResponse = await fetch('https://discord.com/api/users/@me', {
+                headers: {
+                    Authorization: `Bearer ${tokenData.access_token}`
+                }
+            });
+            const userData = await userResponse.json();
+
+            // Check guild membership and role
+            const guildResponse = await fetch(`https://discord.com/api/users/@me/guilds/${REQUIRED_SERVER_ID}/member`, {
+                headers: {
+                    Authorization: `Bearer ${tokenData.access_token}`
+                }
+            });
+            const guildData = await guildResponse.json();
+
+            if (!guildData.roles?.includes(REQUIRED_ROLE_ID)) {
+                throw new Error('Missing required role');
+            }
+
+            // Store session
+            const session = {
+                ...userData,
+                accessToken: tokenData.access_token,
+                tokenType: tokenData.token_type
+            };
+            localStorage.setItem('lurkout_session', JSON.stringify(session));
+            return session;
+        }
+
+        // Initialize login flow
+        btnLogin.onclick = async function() {
+            const verifier = generateCodeVerifier();
+            const challenge = await generateCodeChallenge(verifier);
+            
+            localStorage.setItem('code_verifier', verifier);
+            
+            const params = new URLSearchParams({
+                client_id: DISCORD_CLIENT_ID,
+                redirect_uri: DISCORD_REDIRECT_URI,
+                response_type: 'code',
+                scope: DISCORD_SCOPE,
+                code_challenge: challenge,
+                code_challenge_method: 'S256'
+            });
+
+            window.location.href = `https://discord.com/api/oauth2/authorize?${params}`;
+        };
+
+        // Handle logout
+        btnLogout.onclick = function() {
+            localStorage.removeItem('lurkout_session');
+            localStorage.removeItem('code_verifier');
+            renderAuth(null);
+        };
+
+        // Initialize checkpoints
+        const checkpointName = document.getElementById('checkpointName');
+        const checkpointNotes = document.getElementById('checkpointNotes');
+        const saveCheckpoint = document.getElementById('saveCheckpoint');
+        const listCheckpoints = document.getElementById('listCheckpoints');
+        const checkpointList = document.getElementById('checkpointList');
+
+        let checkpoints = [];
+
+        saveCheckpoint.onclick = function() {
+            const name = checkpointName.value.trim();
+            const notes = checkpointNotes.value.trim();
+            if (!name) return;
+
+            checkpoints.push({ name, notes, timestamp: new Date().toISOString() });
+            checkpointName.value = '';
+            checkpointNotes.value = '';
+            renderCheckpoints();
+        };
+
+        listCheckpoints.onclick = function() {
+            renderCheckpoints();
+        };
+
+        function renderCheckpoints() {
+            checkpointList.innerHTML = '';
+            checkpoints.forEach(cp => {
+                const li = document.createElement('li');
+                li.textContent = `${cp.name} - ${cp.notes || 'No notes'}`;
+                checkpointList.appendChild(li);
+            });
+        }
+
+        // Initialize script generator
+        const scriptTitle = document.getElementById('scriptTitle');
+        const webhookUrl = document.getElementById('webhookUrl');
+        const generateScript = document.getElementById('generateScript');
+        const downloadLink = document.getElementById('downloadLink');
+        const scriptPreview = document.getElementById('scriptPreview');
+
+        generateScript.onclick = function() {
+            const title = scriptTitle.value.trim() || 'Untitled Script';
+            const webhook = webhookUrl.value.trim();
+            
+            const script = `-- ${title}
+-- Generated by Lurkout
+
+local webhook = "${webhook}"
+
+-- Your script code here
+print("Script loaded!")
+`;
+            scriptPreview.textContent = script;
+            downloadLink.classList.remove('hidden');
+            downloadLink.href = 'data:text/plain;charset=utf-8,' + encodeURIComponent(script);
+        };
+
+        // Check auth state on load
+        (async function() {
+            const params = new URLSearchParams(window.location.search);
+            const code = params.get('code');
+            
+            try {
+                if (code) {
+                    // Clear code from URL
+                    window.history.replaceState({}, '', window.location.pathname);
+                    
+                    const verifier = localStorage.getItem('code_verifier');
+                    if (!verifier) {
+                        throw new Error('No code verifier found');
                     }
-                  }
-
-                  (async function(){
-                    const cfg = await loadConfig();
-                    const sdk = new Appwrite();
-                    sdk.setEndpoint(cfg.endpoint||'https://cloud.appwrite.io/v1').setProject(cfg.project||'');
-                    window._LurkoutAppwrite = {sdk, databaseId: cfg.database||''};
-
-                    // UI refs
-                    const loginScreen = document.getElementById('loginScreen');
-                    const dashboard = document.getElementById('dashboard');
-                    const btnLogin = document.getElementById('btnLogin');
-                    const btnLogout = document.getElementById('btnLogout');
-                    const userArea = document.getElementById('userArea');
-                    const accountInfo = document.getElementById('accountInfo');
-
-                    function renderAuth(user){
-                      if(user){
-                        loginScreen.classList.add('hidden'); dashboard.classList.remove('hidden');
-                        userArea.textContent = user.name || user.$id; accountInfo.textContent = `Signed as ${user.name||user.$id} • ${user.email? 'email attached' : 'no email'}`;
-                      } else {
-                        loginScreen.classList.remove('hidden'); dashboard.classList.add('hidden'); userArea.textContent=''; accountInfo.textContent='—';
-                      }
+                    
+                    const session = await handleCallback(code, verifier);
+                    renderAuth(session);
+                } else {
+                    const session = JSON.parse(localStorage.getItem('lurkout_session'));
+                    if (session) {
+                        renderAuth(session);
                     }
-
-                    async function tryGetAccount(){
-                      try{ const acc = await sdk.account.get(); const user = {name: acc.name||acc.$id, email: acc.email||null, id: acc.$id}; localStorage.setItem('lurkout_user', JSON.stringify(user)); renderAuth(user); }catch(e){ localStorage.removeItem('lurkout_user'); renderAuth(null); }
-                    }
-
-                    btnLogin.onclick = function(){ try{ sdk.account.createOAuth2Session('discord', window.location.href, window.location.href); }catch(e){ console.warn('OAuth redirect', e);} };
-                    btnLogout.onclick = function(){ localStorage.removeItem('lurkout_user'); try{ sdk.account.deleteSession('current'); }catch(e){}; renderAuth(null); };
-
-                    // basic checkpoint and script flows are same as demo; omitted for brevity — rely on existing Lua/websync backends for production
-
-                    await tryGetAccount();
-                  })();
-                </script>
-              </body>
-            </html>
+                }
+            } catch (error) {
+                console.error('Auth error:', error);
+                localStorage.removeItem('lurkout_session');
+                localStorage.removeItem('code_verifier');
+                renderAuth(null);
+            }
+        })();
+    </script>
+</body>
+</html>
