@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkpoint Dashboard</title>
+    <style>
+        :root {
+            --primary: #4CAF50;
+            --primary-dark: #388E3C;
+            --error: #f44336;
+            --background: #f5f5f5;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: var(--background);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            background: var(--primary);
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+
+        .btn:hover {
+            background: var(--primary-dark);
+        }
+
+        .pages-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .page-card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 15px;
+        }
+
+        .page-title {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .checkpoint-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .checkpoint-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            border: 1px solid #eee;
+            border-radius: 4px;
+            margin-bottom: 8px;
+        }
+
+        .checkpoint-service {
+            flex: 1;
+            font-weight: 500;
+        }
+
+        .checkpoint-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            width: 100%;
+            max-width: 500px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .error-message {
+            color: var(--error);
+            font-size: 14px;
+            margin-top: 4px;
+        }
+
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Checkpoint Dashboard</h1>
+            <button class="btn" onclick="showNewPageModal()">Create New Page</button>
+        </div>
+
+        <div class="pages-grid" id="pagesGrid">
+            <!-- Pages will be loaded here -->
+        </div>
+    </div>
+
+    <!-- New Page Modal -->
+    <div class="modal" id="newPageModal">
+        <div class="modal-content">
+            <h2>Create New Page</h2>
+            <form id="newPageForm">
+                <div class="form-group">
+                    <label for="pageName">Page Name</label>
+                    <input type="text" id="pageName" required>
+                </div>
+                <div id="checkpointFields">
+                    <!-- Checkpoint fields will be added here -->
+                </div>
+                <button type="button" class="btn" onclick="addCheckpointField()">Add Checkpoint</button>
+                <div class="modal-actions">
+                    <button type="button" class="btn" onclick="hideNewPageModal()">Cancel</button>
+                    <button type="submit" class="btn">Create</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Check if user has required role
+        async function checkAccess() {
+            try {
+                const response = await fetch('/api/auth/check-role', {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+                
+                if (!response.ok) {
+                    window.location.href = '/'; // Redirect to login
+                }
+            } catch (err) {
+                console.error('Access check failed:', err);
+                window.location.href = '/';
+            }
+        }
+
+        // Load and render pages
+        async function loadPages() {
+            try {
+                const response = await fetch('/api/pages', {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+                const pages = await response.json();
+                
+                const grid = document.getElementById('pagesGrid');
+                grid.innerHTML = '';
+                
+                pages.forEach(page => {
+                    const card = createPageCard(page);
+                    grid.appendChild(card);
+                });
+            } catch (err) {
+                console.error('Failed to load pages:', err);
+            }
+        }
+
+        function createPageCard(page) {
+            const card = document.createElement('div');
+            card.className = 'page-card';
+            
+            const header = document.createElement('div');
+            header.className = 'page-header';
+            header.innerHTML = `
+                <h2 class="page-title">${page.name}</h2>
+                <div class="page-actions">
+                    <button class="btn" onclick="copyPageUrl('${page.$id}')">Copy URL</button>
+                </div>
+            `;
+            
+            const list = document.createElement('ul');
+            list.className = 'checkpoint-list';
+            
+            page.checkpoints.forEach(cp => {
+                const item = document.createElement('li');
+                item.className = 'checkpoint-item';
+                item.innerHTML = `
+                    <span class="checkpoint-service">${cp.service}</span>
+                    <div class="checkpoint-actions">
+                        <button class="btn" onclick="editCheckpoint('${page.$id}', '${cp.$id}')">Edit</button>
+                        <button class="btn" onclick="deleteCheckpoint('${page.$id}', '${cp.$id}')">Delete</button>
+                    </div>
+                `;
+                list.appendChild(item);
+            });
+            
+            card.appendChild(header);
+            card.appendChild(list);
+            return card;
+        }
+
+        function showNewPageModal() {
+            document.getElementById('newPageModal').classList.add('active');
+            document.getElementById('checkpointFields').innerHTML = '';
+            addCheckpointField(); // Add first checkpoint field
+        }
+
+        function hideNewPageModal() {
+            document.getElementById('newPageModal').classList.remove('active');
+            document.getElementById('newPageForm').reset();
+        }
+
+        function addCheckpointField() {
+            const container = document.getElementById('checkpointFields');
+            const field = document.createElement('div');
+            field.className = 'form-group';
+            field.innerHTML = `
+                <label>Checkpoint ${container.children.length + 1}</label>
+                <div style="display: flex; gap: 10px;">
+                    <select required>
+                        <option value="linkvertise">Linkvertise</option>
+                        <option value="workink">Work.ink</option>
+                        <option value="lootlabs">LootLabs</option>
+                    </select>
+                    <button type="button" class="btn" onclick="this.parentElement.parentElement.remove()">Remove</button>
+                </div>
+            `;
+            container.appendChild(field);
+        }
+
+        // Form submission
+        document.getElementById('newPageForm').onsubmit = async (e) => {
+            e.preventDefault();
+            
+            const name = document.getElementById('pageName').value;
+            const checkpoints = Array.from(document.querySelectorAll('#checkpointFields select'))
+                .map(select => ({ service: select.value }));
+            
+            try {
+                const response = await fetch('/api/pages', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    },
+                    body: JSON.stringify({ name, checkpoints })
+                });
+                
+                if (response.ok) {
+                    hideNewPageModal();
+                    loadPages();
+                }
+            } catch (err) {
+                console.error('Failed to create page:', err);
+            }
+        };
+
+        async function copyPageUrl(pageId) {
+            const url = `${window.location.origin}/checkpoint/${pageId}`;
+            await navigator.clipboard.writeText(url);
+            alert('URL copied to clipboard!');
+        }
+
+        async function editCheckpoint(pageId, checkpointId) {
+            // Implement checkpoint editing
+        }
+
+        async function deleteCheckpoint(pageId, checkpointId) {
+            if (!confirm('Are you sure you want to delete this checkpoint?')) return;
+            
+            try {
+                await fetch(`/api/pages/${pageId}/checkpoints/${checkpointId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+                loadPages();
+            } catch (err) {
+                console.error('Failed to delete checkpoint:', err);
+            }
+        }
+
+        // Initialize
+        checkAccess();
+        loadPages();</script>
+</body>
+</html>
