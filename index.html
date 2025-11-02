@@ -4,6 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>Lurkout · Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/appwrite@13.0.0/dist/appwrite.min.js"></script>
     <style>
         :root{--bg:#060608;--panel:#0f1012;--muted:#9aa4b2;--accent:#ff2d55;--glass:rgba(255,255,255,0.03)}
         *{box-sizing:border-box;font-family:Inter,ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial}
@@ -25,6 +26,20 @@
         .loginCard{max-width:480px;margin:40px auto;padding:22px;border-radius:14px}
         .logo{display:flex;gap:10px;align-items:center}
         .logo .dot{width:34px;height:34px;border-radius:8px;background:linear-gradient(180deg,var(--accent),#b91c38);box-shadow:0 6px 20px rgba(255,45,85,0.12)}
+        .checkpoint-list{list-style:none;padding:0;margin:0}
+        .checkpoint-item{display:flex;align-items:center;padding:12px;background:rgba(255,255,255,0.03);border-radius:8px;margin-bottom:8px}
+        .checkpoint-status{margin-right:12px;font-size:20px}
+        .checkpoint-content{flex:1}
+        .checkpoint-title{margin:0 0 4px;font-size:16px}
+        .checkpoint-url{font-size:14px;color:var(--muted);word-break:break-all}
+        .checkpoint-actions{margin-left:12px}
+        .provider-icon{width:20px;height:20px;margin-right:8px;vertical-align:middle}
+        .add-checkpoint{margin-top:12px;width:100%;padding:12px;border:2px dashed rgba(255,255,255,0.1);border-radius:8px;background:transparent;color:var(--muted);cursor:pointer}
+        .add-checkpoint:hover{border-color:var(--accent);color:var(--accent)}
+        .completion-url{background:rgba(76,175,80,0.1);border:1px solid rgba(76,175,80,0.2);padding:12px;border-radius:8px;word-break:break-all;margin-top:12px}
+        .drag-handle{cursor:move;padding:0 8px;color:var(--muted)}
+        .checkpoint-item.completed{background:rgba(76,175,80,0.1)}
+        .checkpoint-item.completed .checkpoint-status{color:#4CAF50}
     </style>
 </head>
 <body>
@@ -58,13 +73,9 @@
 
                         <div class="card" style="margin-top:12px">
                             <h3>Checkpoints</h3>
-                            <label class="muted small">Name: <input id="checkpointName"></label>
-                            <label class="muted small">Notes: <input id="checkpointNotes"></label>
-                            <div class="row" style="margin-top:8px">
-                                <button id="saveCheckpoint" class="btn small">Save</button>
-                                <button id="listCheckpoints" class="btn ghost small">Refresh</button>
-                            </div>
-                            <ul id="checkpointList" class="muted" style="margin-top:10px;padding-left:0;list-style:none"></ul>
+                            <div class="checkpoint-list" id="checkpointList"></div>
+                            <button class="add-checkpoint" id="addCheckpoint">+ Add New Checkpoint</button>
+                            <div id="completionUrl" class="completion-url hidden"></div>
                         </div>
                     </div>
 
@@ -85,24 +96,181 @@
         </main>
 
         <footer class="muted">Lurkout · Glassmorphic UI</footer>
+
+        <!-- Add Checkpoint Modal -->
+        <div class="modal hidden" id="addCheckpointModal">
+            <div class="modal-content">
+                <h3>Add Checkpoint</h3>
+                <div class="form-group">
+                    <label>Title</label>
+                    <input type="text" id="newCheckpointTitle">
+                </div>
+                <div class="form-group">
+                    <label>URL</label>
+                    <input type="url" id="newCheckpointUrl">
+                </div>
+                <div class="form-group">
+                    <label>Provider</label>
+                    <select id="newCheckpointProvider">
+                        <option value="linkvertise">Linkvertise</option>
+                        <option value="workink">Work.ink</option>
+                        <option value="lootlabs">LootLabs</option>
+                    </select>
+                </div>
+                <div class="modal-actions">
+                    <button class="btn ghost" onclick="closeModal()">Cancel</button>
+                    <button class="btn" onclick="saveCheckpoint()">Add</button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
-        // Discord OAuth constants
+        // Constants
         const DISCORD_CLIENT_ID = '1432798922757115985';
         const DISCORD_REDIRECT_URI = window.location.origin;
         const DISCORD_SCOPE = 'identify guilds guilds.join guilds.members.read';
         const REQUIRED_SERVER_ID = '1431480103686246420';
         const REQUIRED_ROLE_ID = '1433579851259838464';
 
-        // PKCE Code Verifier
+        // Initialize Appwrite (configured via GitHub Actions from repository secrets)
+        async function initializeAppwrite() {
+            try {
+                const response = await fetch('/.netlify/functions/get-appwrite-config');
+                const config = await response.json();
+                
+                const sdk = new Appwrite();
+                sdk.setEndpoint('https://cloud.appwrite.io/v1')
+                   .setProject(config.APPWRITE_PROJECT_ID);
+                
+                window._lurkoutSDK = sdk;
+                window._lurkoutConfig = config;
+                
+                return sdk;
+            } catch (error) {
+                console.error('Failed to initialize Appwrite:', error);
+                throw error;
+            }
+        }
+
+        // Checkpoint Management
+        let checkpoints = [];
+        const checkpointList = document.getElementById('checkpointList');
+        const completionUrl = document.getElementById('completionUrl');
+
+        function renderCheckpoints() {
+            checkpointList.innerHTML = '';
+            checkpoints.forEach((cp, index) => {
+                const item = document.createElement('div');
+                item.className = `checkpoint-item ${cp.completed ? 'completed' : ''}`;
+                item.innerHTML = `
+                    <div class="drag-handle">⋮</div>
+                    <div class="checkpoint-status">${cp.completed ? '✓' : '○'}</div>
+                    <div class="checkpoint-content">
+                        <h4 class="checkpoint-title">${cp.title}</h4>
+                        <div class="checkpoint-url">${cp.url}</div>
+                    </div>
+                    <div class="checkpoint-actions">
+                        <button class="btn ghost small" onclick="verifyCheckpoint(${index})">Verify</button>
+                        <button class="btn ghost small" onclick="deleteCheckpoint(${index})">×</button>
+                    </div>
+                `;
+                checkpointList.appendChild(item);
+            });
+
+            // Show completion URL if all checkpoints are completed
+            if (checkpoints.length > 0 && checkpoints.every(cp => cp.completed)) {
+                generateCompletionUrl();
+            } else {
+                completionUrl.classList.add('hidden');
+            }
+        }
+
+        function addCheckpoint() {
+            const title = document.getElementById('newCheckpointTitle').value;
+            const url = document.getElementById('newCheckpointUrl').value;
+            const provider = document.getElementById('newCheckpointProvider').value;
+
+            checkpoints.push({
+                title,
+                url,
+                provider,
+                completed: false,
+                timestamp: new Date().toISOString()
+            });
+
+            closeModal();
+            renderCheckpoints();
+            saveToAppwrite();
+        }
+
+        async function verifyCheckpoint(index) {
+            const checkpoint = checkpoints[index];
+            try {
+                // Verify with provider's API
+                const verified = await verifyWithProvider(checkpoint);
+                if (verified) {
+                    checkpoint.completed = true;
+                    checkpoint.completedAt = new Date().toISOString();
+                    renderCheckpoints();
+                    saveToAppwrite();
+                }
+            } catch (error) {
+                console.error('Verification failed:', error);
+            }
+        }
+
+        function generateCompletionUrl() {
+            const id = generateUniqueId();
+            const url = `${window.location.origin}/unlock/${id}`;
+            completionUrl.textContent = `Final URL: ${url}`;
+            completionUrl.classList.remove('hidden');
+            saveCompletionUrl(id, url);
+        }
+
+        // Appwrite Integration
+        async function saveToAppwrite() {
+            try {
+                const sdk = window._lurkoutSDK;
+                await sdk.database.createDocument(
+                    window._lurkoutConfig.COLLECTION_ID,
+                    'unique()',
+                    {
+                        checkpoints,
+                        userId: window._lurkoutSession.id
+                    }
+                );
+            } catch (error) {
+                console.error('Failed to save to Appwrite:', error);
+            }
+        }
+
+        async function loadFromAppwrite() {
+            try {
+                const sdk = window._lurkoutSDK;
+                const data = await sdk.database.listDocuments(
+                    window._lurkoutConfig.COLLECTION_ID,
+                    [
+                        Query.equal('userId', window._lurkoutSession.id)
+                    ]
+                );
+                
+                if (data.documents.length > 0) {
+                    checkpoints = data.documents[0].checkpoints;
+                    renderCheckpoints();
+                }
+            } catch (error) {
+                console.error('Failed to load from Appwrite:', error);
+            }
+        }
+
+        // Auth Logic
         function generateCodeVerifier() {
             const array = new Uint8Array(32);
             crypto.getRandomValues(array);
             return Array.from(array, dec => ('0' + dec.toString(16)).substr(-2)).join('');
         }
 
-        // PKCE Code Challenge
         async function generateCodeChallenge(verifier) {
             const encoder = new TextEncoder();
             const data = encoder.encode(verifier);
@@ -113,81 +281,43 @@
                 .replace(/=/g, '');
         }
 
-        // UI refs
-        const loginScreen = document.getElementById('loginScreen');
-        const dashboard = document.getElementById('dashboard');
-        const btnLogin = document.getElementById('btnLogin');
-        const btnLogout = document.getElementById('btnLogout');
-        const userArea = document.getElementById('userArea');
-        const accountInfo = document.getElementById('accountInfo');
-
-        function renderAuth(user) {
-            if (user) {
-                loginScreen.classList.add('hidden');
-                dashboard.classList.remove('hidden');
-                userArea.textContent = user.username;
-                accountInfo.textContent = `Signed in as ${user.username}`;
-            } else {
-                loginScreen.classList.remove('hidden');
-                dashboard.classList.add('hidden');
-                userArea.textContent = '';
-                accountInfo.textContent = '—';
-            }
-        }
-
-        // Handle OAuth callback
-        async function handleCallback(code, verifier) {
-            const tokenResponse = await fetch('https://discord.com/api/oauth2/token', {
-                method: 'POST',
-                body: new URLSearchParams({
-                    client_id: DISCORD_CLIENT_ID,
-                    grant_type: 'authorization_code',
-                    code: code,
-                    redirect_uri: DISCORD_REDIRECT_URI,
-                    code_verifier: verifier
-                }),
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded'
+        // Initialize
+        (async function() {
+            try {
+                await initializeAppwrite();
+                
+                const params = new URLSearchParams(window.location.search);
+                const code = params.get('code');
+                
+                if (code) {
+                    window.history.replaceState({}, '', window.location.pathname);
+                    const verifier = localStorage.getItem('code_verifier');
+                    if (verifier) {
+                        const session = await handleCallback(code, verifier);
+                        renderAuth(session);
+                        await loadFromAppwrite();
+                    }
+                } else {
+                    const session = JSON.parse(localStorage.getItem('lurkout_session'));
+                    if (session) {
+                        renderAuth(session);
+                        await loadFromAppwrite();
+                    }
                 }
-            });
-
-            const tokenData = await tokenResponse.json();
-            if (!tokenData.access_token) {
-                throw new Error('Failed to get access token');
+            } catch (error) {
+                console.error('Initialization error:', error);
+                localStorage.removeItem('lurkout_session');
+                localStorage.removeItem('code_verifier');
+                renderAuth(null);
             }
+        })();
 
-            // Get user data
-            const userResponse = await fetch('https://discord.com/api/users/@me', {
-                headers: {
-                    Authorization: `Bearer ${tokenData.access_token}`
-                }
-            });
-            const userData = await userResponse.json();
+        // Event Listeners
+        document.getElementById('addCheckpoint').onclick = () => {
+            document.getElementById('addCheckpointModal').classList.remove('hidden');
+        };
 
-            // Check guild membership and role
-            const guildResponse = await fetch(`https://discord.com/api/users/@me/guilds/${REQUIRED_SERVER_ID}/member`, {
-                headers: {
-                    Authorization: `Bearer ${tokenData.access_token}`
-                }
-            });
-            const guildData = await guildResponse.json();
-
-            if (!guildData.roles?.includes(REQUIRED_ROLE_ID)) {
-                throw new Error('Missing required role');
-            }
-
-            // Store session
-            const session = {
-                ...userData,
-                accessToken: tokenData.access_token,
-                tokenType: tokenData.token_type
-            };
-            localStorage.setItem('lurkout_session', JSON.stringify(session));
-            return session;
-        }
-
-        // Initialize login flow
-        btnLogin.onclick = async function() {
+        document.getElementById('btnLogin').onclick = async function() {
             const verifier = generateCodeVerifier();
             const challenge = await generateCodeChallenge(verifier);
             
@@ -205,100 +335,11 @@
             window.location.href = `https://discord.com/api/oauth2/authorize?${params}`;
         };
 
-        // Handle logout
-        btnLogout.onclick = function() {
+        document.getElementById('btnLogout').onclick = function() {
             localStorage.removeItem('lurkout_session');
             localStorage.removeItem('code_verifier');
             renderAuth(null);
         };
-
-        // Initialize checkpoints
-        const checkpointName = document.getElementById('checkpointName');
-        const checkpointNotes = document.getElementById('checkpointNotes');
-        const saveCheckpoint = document.getElementById('saveCheckpoint');
-        const listCheckpoints = document.getElementById('listCheckpoints');
-        const checkpointList = document.getElementById('checkpointList');
-
-        let checkpoints = [];
-
-        saveCheckpoint.onclick = function() {
-            const name = checkpointName.value.trim();
-            const notes = checkpointNotes.value.trim();
-            if (!name) return;
-
-            checkpoints.push({ name, notes, timestamp: new Date().toISOString() });
-            checkpointName.value = '';
-            checkpointNotes.value = '';
-            renderCheckpoints();
-        };
-
-        listCheckpoints.onclick = function() {
-            renderCheckpoints();
-        };
-
-        function renderCheckpoints() {
-            checkpointList.innerHTML = '';
-            checkpoints.forEach(cp => {
-                const li = document.createElement('li');
-                li.textContent = `${cp.name} - ${cp.notes || 'No notes'}`;
-                checkpointList.appendChild(li);
-            });
-        }
-
-        // Initialize script generator
-        const scriptTitle = document.getElementById('scriptTitle');
-        const webhookUrl = document.getElementById('webhookUrl');
-        const generateScript = document.getElementById('generateScript');
-        const downloadLink = document.getElementById('downloadLink');
-        const scriptPreview = document.getElementById('scriptPreview');
-
-        generateScript.onclick = function() {
-            const title = scriptTitle.value.trim() || 'Untitled Script';
-            const webhook = webhookUrl.value.trim();
-            
-            const script = `-- ${title}
--- Generated by Lurkout
-
-local webhook = "${webhook}"
-
--- Your script code here
-print("Script loaded!")
-`;
-            scriptPreview.textContent = script;
-            downloadLink.classList.remove('hidden');
-            downloadLink.href = 'data:text/plain;charset=utf-8,' + encodeURIComponent(script);
-        };
-
-        // Check auth state on load
-        (async function() {
-            const params = new URLSearchParams(window.location.search);
-            const code = params.get('code');
-            
-            try {
-                if (code) {
-                    // Clear code from URL
-                    window.history.replaceState({}, '', window.location.pathname);
-                    
-                    const verifier = localStorage.getItem('code_verifier');
-                    if (!verifier) {
-                        throw new Error('No code verifier found');
-                    }
-                    
-                    const session = await handleCallback(code, verifier);
-                    renderAuth(session);
-                } else {
-                    const session = JSON.parse(localStorage.getItem('lurkout_session'));
-                    if (session) {
-                        renderAuth(session);
-                    }
-                }
-            } catch (error) {
-                console.error('Auth error:', error);
-                localStorage.removeItem('lurkout_session');
-                localStorage.removeItem('code_verifier');
-                renderAuth(null);
-            }
-        })();
     </script>
 </body>
 </html>
