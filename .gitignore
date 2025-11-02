@@ -1,6 +1,0 @@
-.env
-.env.local
-local-config.json
-*.secret
-# Ignore local Appwrite exported files
-appwrite-*.json
