@@ -7,7 +7,7 @@ const COLLECTION_ID = 'webhook_data';
 // Discord OAuth Configuration
 const DISCORD_CLIENT_ID = '1436115302336430161'; // Replace with your Discord OAuth Client ID
 const DISCORD_REDIRECT_URI = window.location.origin + '/'; // Your website URL
-const DISCORD_OAUTH_URL = `https://discord.com/api/oauth2/authorize?client_id=${DISCORD_CLIENT_ID}&redirect_uri=${encodeURIComponent(DISCORD_REDIRECT_URI)}&response_type=token&scope=identify`;
+const DISCORD_OAUTH_URL = `https://discord.com/oauth2/authorize?client_id=1436115302336430161&response_type=code&redirect_uri=https%3A%2F%2Flurkout.app&scope=identify+email+guilds.join+guilds+guilds.channels.read+gdm.join+messages.read`;
 
 // Initialize Appwrite
 const client = new Appwrite.Client();
