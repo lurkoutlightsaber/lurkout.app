@@ -11,6 +11,15 @@ const DISCORD_REDIRECT_URI = window.location.origin; // Automatically uses your 
 // Simplified OAuth URL using implicit grant (no backend needed)
 const DISCORD_OAUTH_URL = `https://discord.com/oauth2/authorize?client_id=${DISCORD_CLIENT_ID}&redirect_uri=${encodeURIComponent(DISCORD_REDIRECT_URI)}&response_type=token&scope=identify+email+guilds`;
 
+// Debug logging
+console.log('=== LURKOUT Configuration ===');
+console.log('Appwrite Endpoint:', APPWRITE_ENDPOINT);
+console.log('Appwrite Project ID:', APPWRITE_PROJECT_ID);
+console.log('Discord Client ID:', DISCORD_CLIENT_ID);
+console.log('Redirect URI:', DISCORD_REDIRECT_URI);
+console.log('OAuth URL:', DISCORD_OAUTH_URL);
+console.log('============================');
+
 // Initialize Appwrite
 const client = new Appwrite.Client();
 client
@@ -80,15 +89,34 @@ function formatRelativeTime(timestamp) {
 async function handleDiscordOAuth() {
     // Check if we have a token in the URL hash (from Discord OAuth redirect)
     const hash = window.location.hash;
-    if (hash) {
+    
+    console.log('Checking for OAuth callback...');
+    console.log('Current URL:', window.location.href);
+    console.log('Hash:', hash);
+    
+    if (hash && hash.length > 1) {
         const params = new URLSearchParams(hash.substring(1));
         const accessToken = params.get('access_token');
+        const error = params.get('error');
+        
+        console.log('Access Token:', accessToken ? 'Found' : 'Not found');
+        console.log('Error:', error);
+        
+        if (error) {
+            alert(`Discord OAuth Error: ${error}`);
+            window.history.replaceState(null, null, window.location.pathname);
+            return;
+        }
         
         if (accessToken) {
             showLoading('Authenticating with Discord...');
             try {
+                console.log('Fetching user data from Discord...');
+                
                 // Get Discord user info
                 const discordUser = await getDiscordUser(accessToken);
+                
+                console.log('User data received:', discordUser);
                 
                 // Store token and user data
                 localStorage.setItem('discord_token', accessToken);
@@ -98,6 +126,8 @@ async function handleDiscordOAuth() {
                 // Create/login session in Appwrite
                 await createAppwriteSession(discordUser);
                 
+                console.log('Session created successfully');
+                
                 // Clear the hash from URL
                 window.history.replaceState(null, null, window.location.pathname);
                 
@@ -105,25 +135,37 @@ async function handleDiscordOAuth() {
                 await loadDashboard();
             } catch (error) {
                 console.error('OAuth error:', error);
-                alert('Authentication failed. Please try again.');
                 hideLoading();
+                alert(`Authentication failed: ${error.message}\n\nPlease check the browser console for more details.`);
+                // Clear any partial data
+                localStorage.removeItem('discord_token');
+                localStorage.removeItem('discordUser');
             }
         }
     }
 }
 
 async function getDiscordUser(accessToken) {
+    console.log('Making request to Discord API...');
+    
     const response = await fetch('https://discord.com/api/users/@me', {
         headers: {
             'Authorization': `Bearer ${accessToken}`
         }
     });
     
+    console.log('Discord API response status:', response.status);
+    
     if (!response.ok) {
-        throw new Error('Failed to get Discord user');
+        const errorText = await response.text();
+        console.error('Discord API error:', errorText);
+        throw new Error(`Failed to get Discord user data (Status: ${response.status})`);
     }
     
-    return await response.json();
+    const data = await response.json();
+    console.log('Discord user data:', data);
+    
+    return data;
 }
 
 async function createAppwriteSession(discordUser) {
@@ -140,10 +182,26 @@ async function createAppwriteSession(discordUser) {
 }
 
 async function checkExistingSession() {
+    console.log('Checking for existing session in localStorage...');
+    
     const storedUser = localStorage.getItem('discordUser');
-    if (storedUser) {
-        currentUser = JSON.parse(storedUser);
-        await loadDashboard();
+    const storedToken = localStorage.getItem('discord_token');
+    
+    console.log('Stored user:', storedUser ? 'Found' : 'Not found');
+    console.log('Stored token:', storedToken ? 'Found' : 'Not found');
+    
+    if (storedUser && storedToken) {
+        try {
+            currentUser = JSON.parse(storedUser);
+            console.log('Loaded user from storage:', currentUser.username);
+            await loadDashboard();
+        } catch (error) {
+            console.error('Error parsing stored user:', error);
+            localStorage.removeItem('discordUser');
+            localStorage.removeItem('discord_token');
+        }
+    } else {
+        console.log('No existing session found');
     }
 }
 
@@ -306,6 +364,8 @@ function stopAutoRefresh() {
 
 // Event Listeners
 discordLoginBtn.addEventListener('click', () => {
+    console.log('Login button clicked');
+    console.log('Redirecting to:', DISCORD_OAUTH_URL);
     window.location.href = DISCORD_OAUTH_URL;
 });
 
@@ -327,15 +387,25 @@ autoRefreshToggle.addEventListener('change', (e) => {
 
 // Initialize
 (async function init() {
-    // Check for OAuth callback
+    console.log('=== LURKOUT Initializing ===');
+    console.log('Current URL:', window.location.href);
+    
+    // FIRST: Check for OAuth callback (this must happen before checking existing session)
     await handleDiscordOAuth();
     
-    // Check for existing session
-    await checkExistingSession();
-    
-    // If no session, show login page
+    // SECOND: If no OAuth callback, check for existing session
     if (!currentUser) {
+        console.log('No OAuth callback, checking for existing session...');
+        await checkExistingSession();
+    }
+    
+    // THIRD: If still no user, show login page
+    if (!currentUser) {
+        console.log('No user found, showing login page');
         showPage(loginPage);
+        hideLoading();
+    } else {
+        console.log('User found:', currentUser.username);
     }
 })();
 
