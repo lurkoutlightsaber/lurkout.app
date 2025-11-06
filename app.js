@@ -4,10 +4,12 @@ const APPWRITE_PROJECT_ID = '6904e9f0002a87c6eb1f'; // Replace with your project
 const DATABASE_ID = 'lurkout_db';
 const COLLECTION_ID = 'webhook_data';
 
-// Discord OAuth Configuration
-const DISCORD_CLIENT_ID = '1436115302336430161'; // Replace with your Discord OAuth Client ID
-const DISCORD_REDIRECT_URI = window.location.origin; // Your website URL
-const DISCORD_OAUTH_URL = `https://discord.com/oauth2/authorize?client_id=1436115302336430161&response_type=code&redirect_uri=https%3A%2F%2Flurkout.app&scope=identify+email+guilds.join+guilds+guilds.channels.read+gdm.join+messages.read`;
+// Discord OAuth Configuration (Simplified - No backend needed!)
+const DISCORD_CLIENT_ID = '1436115302336430161';
+const DISCORD_REDIRECT_URI = window.location.origin; // Automatically uses your website URL
+
+// Simplified OAuth URL using implicit grant (no backend needed)
+const DISCORD_OAUTH_URL = `https://discord.com/oauth2/authorize?client_id=${DISCORD_CLIENT_ID}&redirect_uri=${encodeURIComponent(DISCORD_REDIRECT_URI)}&response_type=token&scope=identify+email+guilds`;
 
 // Initialize Appwrite
 const client = new Appwrite.Client();
@@ -30,7 +32,10 @@ const logoutBtn = document.getElementById('logoutBtn');
 const loadingOverlay = document.getElementById('loadingOverlay');
 const userAvatar = document.getElementById('userAvatar');
 const userName = document.getElementById('userName');
+const userEmail = document.getElementById('userEmail');
 const discordId = document.getElementById('discordId');
+const displayUserName = document.getElementById('displayUserName');
+const displayUserEmail = document.getElementById('displayUserEmail');
 const channelId = document.getElementById('channelId');
 const webhookUrl = document.getElementById('webhookUrl');
 const totalData = document.getElementById('totalData');
@@ -73,7 +78,7 @@ function formatRelativeTime(timestamp) {
 
 // Authentication Functions
 async function handleDiscordOAuth() {
-    // Check if we have a token in the URL hash
+    // Check if we have a token in the URL hash (from Discord OAuth redirect)
     const hash = window.location.hash;
     if (hash) {
         const params = new URLSearchParams(hash.substring(1));
@@ -84,6 +89,11 @@ async function handleDiscordOAuth() {
             try {
                 // Get Discord user info
                 const discordUser = await getDiscordUser(accessToken);
+                
+                // Store token and user data
+                localStorage.setItem('discord_token', accessToken);
+                localStorage.setItem('discordUser', JSON.stringify(discordUser));
+                currentUser = discordUser;
                 
                 // Create/login session in Appwrite
                 await createAppwriteSession(discordUser);
@@ -153,11 +163,16 @@ async function loadDashboard() {
     
     showLoading('Loading dashboard...');
     
-    // Update user info
+    // Update user info in navbar
     userAvatar.src = currentUser.avatar 
         ? `https://cdn.discordapp.com/avatars/${currentUser.id}/${currentUser.avatar}.png`
         : 'https://cdn.discordapp.com/embed/avatars/0.png';
     userName.textContent = currentUser.username;
+    userEmail.textContent = currentUser.email || 'No email provided';
+    
+    // Update user info in webhook section
+    displayUserName.textContent = currentUser.username;
+    displayUserEmail.textContent = currentUser.email || 'No email provided';
     discordId.textContent = currentUser.id;
     
     // Load data
