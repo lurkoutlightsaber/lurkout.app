@@ -127,11 +127,12 @@
             background: rgba(0, 0, 0, 0.8);
             border: 2px solid rgba(255, 0, 0, 0.5);
             border-radius: 10px;
-            padding: 10px 15px;
+            padding: 20px 25px;
             backdrop-filter: blur(10px);
             transition: all 0.3s ease;
             text-decoration: none;
-            color: #ff0000;
+            font-weight: bold;
+            color: #0077ff;
             font-size: clamp(0.7rem, 1.5vw, 0.9rem);
             box-shadow: 0 0 15px rgba(255, 0, 0, 0.3);
             animation: pulse 2s ease-in-out infinite;
@@ -416,7 +417,7 @@
     </div>
 
     <a href="https://discord.gg/PtmPEfaVfA" target="_blank" class="discord-link">
-        💬 Join the Discord!
+        JOIN THE DISCORD HERE! ITS FREE AND AMAZING AND YOU GET EVEN MORE THINGS HERE!!!!!!!!!!
     </a>
 
     <!-- Modal for viewing source -->
@@ -461,7 +462,6 @@
             'LurkoutDesync.lua': '-- Lurkout Desync Engine\n-- Obfuscated content - View on executor\nloadstring(game:HttpGet("https://lurkout.app/lib/LurkoutDesync.lua"))()',
             'prisonlife.lua': '-- Prison Life Script\n-- Obfuscated content - View on executor\nloadstring(game:HttpGet("https://lurkout.app/lib/prisonlife.lua"))()',
             'violencedistrict.lua': '-- Violence District Script\n-- Obfuscated content - View on executor\nloadstring(game:HttpGet("https://lurkout.app/lib/violencedistrict.lua"))()',
-            'voiduniversal.lua': '-- Void Universal Script\n-- Obfuscated content - View on executor\nloadstring(game:HttpGet("https://lurkout.app/lib/voiduniversal.lua"))()'
         };
 
         // Initialize the page
@@ -491,20 +491,7 @@
 
         // View source in modal
         function viewSource(scriptName) {
-            const modal = document.getElementById('modal');
-            const modalTitle = document.getElementById('modalTitle');
-            const loadstringCode = document.getElementById('loadstringCode');
-            const sourceCode = document.getElementById('sourceCode');
-
-            const url = `https://lurkout.app/lib/${scriptName}`;
-            const loadstring = `loadstring(game:HttpGet("${url}"))()`;
-            const content = scriptContents[scriptName] || '-- Script content not available\n-- This is a placeholder';
-
-            modalTitle.textContent = scriptName;
-            loadstringCode.textContent = loadstring;
-            sourceCode.textContent = content;
-
-            modal.classList.add('active');
+            alert("just copy the loadstring, its easier lol.")
         }
 
         // Close modal
